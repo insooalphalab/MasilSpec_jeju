@@ -6,9 +6,8 @@ data/raw/
 data/interim/
 data/processed/
 .vscode/
-# 제3자 문서·권리 문제 소지 (로컬 보관만)
+# 제3자 문서 (재배포 권리 불분명, 로컬 보관만)
 docs/reference/
-docs/archive/
 # 다시 만들 수 있는 산출물 (python -m samchun.dashboard / samchun.mbti --export)
 app/dashboard/example*.html
 app/dashboard/mbti/illu/

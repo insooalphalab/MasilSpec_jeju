@@ -80,8 +80,7 @@ Jeju_project/
 │  ├─ ai_agent.md            원 명세서
 │  ├─ llm_vs_template.md     최근 LLM 브리핑 비교 결과
 │  ├─ screenshots/           화면 캡처
-│  ├─ reference/             외부 가이드 PDF (빅데이터센터 반출 기준, 비짓제주, 도로명주소 API) — git 제외, 로컬만
-│  └─ archive/mbti_v0_pokemon/  초기 MBTI 시안 (포켓몬 매칭 — 공개 사용 금지) — git 제외, 로컬만
+│  └─ reference/             외부 가이드 PDF (빅데이터센터 반출 기준, 비짓제주, 도로명주소 API) — git 제외, 로컬만
 └─ data/                     (git 제외, 용량 약 8GB)
    ├─ raw/<데이터셋>/        원천 그대로 · jeju_cardimage/NN.png = MBTI 일러스트 원본
    ├─ interim/               정제 캐시 (지오코딩, 지형, POI, 도로폭, 배경지도 타일 등)
