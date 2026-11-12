@@ -1,0 +1,35 @@
+[project]
+name = "samchun"
+version = "0.1.0"
+description = "마실스펙_제주: 마실(동네 생활권) 기준 공간 스펙 앱의 제주 버전 (브리핑 캐릭터 '제주 삼춘')"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas",
+    "openpyxl",
+    "requests",
+    "pyyaml",
+    "pydantic>=2",
+    "geopandas",
+    "pyarrow",
+    "h3>=4",
+    "duckdb",
+    "streamlit",
+    "folium",
+    "python-dotenv",
+    "scipy",     # routing (주행 시간)
+    "pillow",    # terrain 타일, 정적 HTML 배경지도
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,1268 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마실스펙_제주 · JEJU TECHNOPARK</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+/* JTP 클린 테크(Clean Tech) 표준 팔레트 & 엔터프라이즈 디자인 토큰 */
+:root{
+  /* Core & Sub Accent Colors (JTP Official) */
+  --green:#72CD00;
+  --green-ink:#3E7500;
+  --green-soft:#EBF7E3;
+  --blue:#0068B3;
+  --blue-hover:#00528F;
+  --cyan:#00A9E0;
+  --navy:#002D72;
+  --gold:#866C41;
+  --gold-soft:#F7F3EB;
+
+  /* Base & Neutral Colors */
+  --ink:#1F1F1F;
+  --gray:#5A6065;
+  --gray-light:#8C949E;
+  --line:#E2E8F0;
+  --line-strong:#CBD5E1;
+
+  /* Background Tints */
+  --bg-mint:#F4F9F5;
+  --bg-blue:#F0F5FA;
+  --bg-gray:#F8FAFC;
+  --page:#F1F5F9;
+  --panel:#FFFFFF;
+
+  /* 점수 단계 (낮음 → 높음): Soft Blue → Sky Cyan → Techno Blue → Deep Navy */
+  --q0:#EAF2F9; --q1:#C3DDF0; --q2:#7FC4E8; --q3:#22A0DA; --q4:#0068B3; --q5:#002D72;
+
+  /* Typography & Elevation */
+  --sans:'Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono',Consolas,Monaco,monospace;
+  --radius-lg:14px;
+  --radius-md:10px;
+  --radius-sm:6px;
+  --shadow-sm:0 1px 3px rgba(0,45,114,0.04), 0 1px 2px rgba(0,45,114,0.02);
+  --shadow-md:0 4px 16px -2px rgba(0,45,114,0.06), 0 2px 6px -1px rgba(0,45,114,0.04);
+  --shadow-lg:0 12px 28px -4px rgba(0,45,114,0.10), 0 4px 12px -2px rgba(0,45,114,0.05);
+  --ease:cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background-color:var(--page);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(0,169,224,0.06) 0px, transparent 45%),
+    radial-gradient(at 100% 0%, rgba(114,205,0,0.06) 0px, transparent 45%);
+  background-attachment:fixed;
+  color:var(--ink);
+  font:14px/1.6 var(--sans);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 20px 64px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* 상단 헤더 & 필(Pill) 네비게이션 탭 */
+.topbar{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:14px 20px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow-sm);
+}
+.brand{
+  display:flex;align-items:center;gap:12px;
+  font-weight:800;font-size:18px;color:var(--navy);letter-spacing:-.03em;
+}
+.brand-mark{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg, var(--blue) 0%, var(--cyan) 65%, var(--green) 100%);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-family:var(--mono);font-weight:800;font-size:14px;letter-spacing:-0.5px;
+  box-shadow:0 4px 10px rgba(0,104,179,0.22);
+  flex-shrink:0;
+}
+.brand-txt small{
+  display:block;color:var(--green-ink);font-size:10.5px;font-weight:800;
+  letter-spacing:1.8px;text-transform:uppercase;margin-bottom:1px;
+}
+.tabs{
+  display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;
+  background:var(--bg-gray);padding:5px;border-radius:10px;border:1px solid var(--line);
+}
+.tabs button{
+  border:0;background:transparent;color:var(--gray);border-radius:7px;
+  padding:7px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .2s var(--ease);
+}
+.tabs button:hover{color:var(--blue);background:rgba(0,104,179,0.06)}
+.tabs button[aria-selected="true"]{
+  background:var(--blue);color:#fff;font-weight:700;
+  box-shadow:0 2px 8px rgba(0,104,179,0.25);
+}
+
+/* 스마트 검색 바 */
+.search{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-top:3px solid var(--blue);
+  border-radius:var(--radius-lg);
+  padding:14px 20px;
+  margin-bottom:20px;
+  box-shadow:var(--shadow-md);
+}
+.search .lbl{
+  display:inline-flex;align-items:center;gap:6px;
+  font-weight:800;color:var(--navy);font-size:13.5px;padding-right:4px;
+}
+.search .lbl::before{
+  content:"";display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 0 3px rgba(114,205,0,0.2);
+}
+.search input{
+  flex:1 1 320px;min-width:0;
+  border:1px solid var(--line);border-radius:var(--radius-md);
+  padding:10px 14px;font:inherit;font-size:13.5px;
+  background:var(--bg-gray);color:var(--ink);
+  transition:all .2s var(--ease);
+}
+.search input:hover{border-color:var(--line-strong)}
+.search input:focus{
+  outline:none;border-color:var(--blue);background:#fff;
+  box-shadow:0 0 0 3px rgba(0,169,224,0.18);
+}
+.search select{
+  border:1px solid var(--line);border-radius:var(--radius-md);
+  padding:10px 14px;font:inherit;font-size:13.5px;font-weight:600;
+  background:var(--bg-gray);color:var(--ink);cursor:pointer;
+  transition:all .2s var(--ease);
+}
+.search select:hover{border-color:var(--line-strong)}
+.search select:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(0,169,224,0.18)}
+.search button{
+  border:0;
+  background:linear-gradient(135deg, var(--blue) 0%, var(--navy) 100%);
+  color:#fff;font-weight:700;border-radius:var(--radius-md);
+  padding:10px 20px;font:inherit;font-size:13.5px;cursor:pointer;
+  box-shadow:0 3px 10px rgba(0,104,179,0.22);
+  transition:all .2s var(--ease);
+}
+.search button:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(0,104,179,0.3)}
+.search button:active{transform:translateY(0)}
+.search button:disabled{opacity:.6;cursor:wait;transform:none}
+.search .msg{
+  flex-basis:100%;font-size:12px;color:var(--gray);
+  display:flex;align-items:center;gap:6px;margin-top:2px;
+}
+.search .msg.err{color:var(--navy);font-weight:700;background:var(--bg-blue);padding:6px 10px;border-radius:6px;border-left:3px solid var(--navy)}
+
+/* 보고서 헤더 배너 (Title Band) */
+.title{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg, #FFFFFF 0%, #F8FBFF 65%, #F2F9F4 100%);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:26px 28px 24px;
+  margin-bottom:20px;
+  box-shadow:var(--shadow-md);
+}
+.title::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:4px;
+  background:linear-gradient(90deg, var(--green) 0%, var(--cyan) 45%, var(--blue) 80%, var(--navy) 100%);
+}
+.title::after{
+  content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;
+  background:radial-gradient(circle, rgba(0,169,224,0.08) 0%, rgba(114,205,0,0.05) 50%, transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.title .eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  color:var(--green-ink);background:var(--green-soft);
+  border:1px solid rgba(114,205,0,0.35);
+  padding:3px 10px;border-radius:999px;
+  font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+  margin-bottom:8px;
+}
+.title h1{
+  margin:2px 0 6px;font-size:28px;font-weight:800;
+  color:var(--ink);letter-spacing:-.7px;line-height:1.25;
+}
+.title .sub{color:var(--gray);font-size:13.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.title .sub b{color:var(--navy);font-weight:700}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;font-weight:600;
+  border:1px solid var(--line);border-radius:6px;
+  padding:3px 10px;color:var(--gray);background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,0.02);
+}
+.chip.llm{
+  border-color:rgba(114,205,0,0.5);color:var(--green-ink);
+  background:var(--bg-mint);font-weight:700;
+}
+.say{
+  margin-top:16px;
+  background:var(--bg-mint);
+  border:1px solid rgba(114,205,0,0.28);
+  border-left:4px solid var(--green);
+  padding:14px 18px;border-radius:var(--radius-md);
+  font-size:14.5px;line-height:1.65;color:var(--ink);
+  box-shadow:0 2px 6px rgba(78,143,0,0.04);
+}
+.say b{color:var(--navy);background:rgba(0,104,179,0.08);padding:1px 5px;border-radius:4px}
+
+/* 대시보드 그리드 & 카드 공통 */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:22px 24px;
+  min-width:0;
+  box-shadow:var(--shadow-md);
+  transition:transform .22s var(--ease), box-shadow .22s var(--ease), border-color .22s var(--ease);
+}
+.card:hover{
+  box-shadow:var(--shadow-lg);
+  border-color:rgba(0,104,179,0.22);
+}
+.card h2{
+  margin:0 0 16px;font-size:16px;font-weight:800;color:var(--ink);
+  padding-bottom:12px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  letter-spacing:-0.3px;
+}
+.card h2::before{
+  content:"■";color:var(--blue);font-size:13px;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:6px;
+  background:var(--bg-blue);flex-shrink:0;
+}
+.card h2 small{font-weight:600;color:var(--gray);font-size:12px;margin-left:auto}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}.c3{grid-column:span 3}
+@media (max-width:1024px){.c8,.c7,.c6,.c5,.c4{grid-column:span 12}.c3{grid-column:span 6}}
+@media (max-width:560px){.c3{grid-column:span 12}.wrap{padding:16px 12px 48px}.card{padding:18px 16px}}
+
+/* KPI 요약 타일 */
+.kpi{
+  position:relative;overflow:hidden;
+  border-top:4px solid var(--blue);
+  display:flex;flex-direction:column;justify-content:space-between;gap:10px;
+  padding:20px 22px;
+  background:linear-gradient(180deg, #FFFFFF 0%, #FAFBFD 100%);
+}
+.kpi:hover{transform:translateY(-2px)}
+.kpi.g{border-top-color:var(--green)}
+.kpi.n{border-top-color:var(--navy)}
+.kpi.o{border-top-color:var(--gold)}
+.kpi .k{
+  font-size:12.5px;color:var(--gray);font-weight:700;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.kpi .k::after{
+  content:"";width:8px;height:8px;border-radius:50%;background:var(--blue);opacity:.7;
+}
+.kpi.g .k::after{background:var(--green)}
+.kpi.n .k::after{background:var(--navy)}
+.kpi.o .k::after{background:var(--gold)}
+.kpi .v{
+  font-size:38px;font-weight:800;line-height:1.05;letter-spacing:-1.5px;
+  color:var(--ink);margin:2px 0;
+}
+.kpi .v small{
+  font-size:14px;font-weight:700;color:var(--gray);
+  margin-left:6px;letter-spacing:-0.2px;
+}
+.kpi .oneliner{
+  font-size:13.5px;font-weight:800;color:var(--navy);line-height:1.4;word-break:keep-all;
+  background:var(--bg-blue);border-left:3px solid var(--blue);border-radius:6px;padding:6px 10px;
+}
+.kpi .d{font-size:12px;color:var(--gray);line-height:1.45}
+.meter{
+  position:relative;height:9px;background:var(--bg-blue);
+  border-radius:999px;overflow:hidden;
+  box-shadow:inset 0 1px 2px rgba(0,45,114,0.08);
+}
+.meter i{
+  position:absolute;left:0;top:0;bottom:0;
+  background:linear-gradient(90deg, var(--cyan) 0%, var(--blue) 100%);
+  border-radius:999px;
+  transition:width .4s var(--ease);
+}
+.kpi.g .meter i{
+  background:linear-gradient(90deg, var(--green) 0%, var(--green-ink) 100%);
+}
+.dots{display:flex;gap:5px;flex-wrap:wrap;min-height:16px;align-items:center}
+.dots i{
+  width:14px;height:14px;border-radius:4px;background:var(--line);
+  transition:transform .2s var(--ease);
+}
+.dots i.n{background:var(--navy);box-shadow:0 2px 4px rgba(0,45,114,0.25)}
+.dots i.o{background:var(--gold);box-shadow:0 2px 4px rgba(134,108,65,0.25)}
+
+/* 8대 테마 팔각형 레이더 */
+.radar{width:100%;height:auto;display:block;max-width:460px;margin:4px auto;overflow:visible}
+.radar .gr{fill:none;stroke:var(--line);stroke-width:1}
+.radar .gr.mid{stroke:var(--line-strong);stroke-dasharray:4 4;stroke-width:1.2}
+.radar .ax{stroke:var(--line);stroke-width:1}
+.radar .avg{
+  fill:var(--bg-gray);fill-opacity:.65;
+  stroke:var(--gray-light);stroke-width:1.5;stroke-dasharray:5 4;
+}
+.radar .me{
+  fill:url(#radarGrad);fill-opacity:1;
+  stroke:var(--blue);stroke-width:2.8;stroke-linejoin:round;
+  filter:drop-shadow(0 4px 8px rgba(0,104,179,0.18));
+}
+.radar .pt{fill:var(--blue);stroke:#fff;stroke-width:2;transition:all .2s var(--ease)}
+.radar .pt.f{fill:var(--green);stroke:#fff;stroke-width:2.5}
+.radar .lb{font-size:12.5px;fill:var(--gray);font-weight:700;transition:fill .15s}
+.radar .lb.f{fill:var(--green-ink);font-weight:800}
+.radar .sv{font-size:16.5px;font-weight:800;fill:var(--ink);font-family:var(--mono)}
+.radar .sv.f{fill:var(--green-ink)}
+.radar .pc{font-size:10.5px;fill:var(--gray);font-weight:600;font-family:var(--sans)}
+.radar .tick{font-size:9.5px;fill:var(--gray-light);font-family:var(--mono);font-weight:600}
+.radar .vx{cursor:pointer;outline:none}
+.radar .vx .hit{stroke:transparent;stroke-width:36}
+.radar .vx .halo{fill:var(--green);fill-opacity:0;transition:fill-opacity .2s var(--ease)}
+.radar .vx:hover .halo,.radar .vx:focus .halo{fill-opacity:.22}
+.radar .vx:hover .lb{fill:var(--blue)}
+.radar .vx.on .halo{fill-opacity:.28}
+
+.tchips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px}
+.tchips button{
+  border:1px solid var(--line);background:var(--bg-gray);color:var(--gray);
+  border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .18s var(--ease);
+}
+.tchips button:hover{border-color:var(--blue);color:var(--blue);background:var(--bg-blue);transform:translateY(-1px)}
+.tchips button.on{
+  background:var(--green);border-color:var(--green-ink);color:#fff;font-weight:800;
+  box-shadow:0 3px 8px rgba(114,205,0,0.3);
+}
+.tchips button b{font-family:var(--mono);margin-left:4px;opacity:.92}
+.hint{
+  text-align:center;font-size:12px;color:var(--blue);font-weight:600;
+  background:var(--bg-blue);padding:6px 12px;border-radius:8px;margin-top:10px;
+}
+.key{
+  display:flex;gap:16px;font-size:12px;color:var(--gray);font-weight:500;
+  flex-wrap:wrap;justify-content:center;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);
+}
+.key i{display:inline-block;width:18px;height:0;vertical-align:middle;margin-right:6px;border-top:3px solid var(--blue)}
+.key i.d{border-top:2px dashed var(--gray)}
+.key i.sq{width:12px;height:12px;border:0;border-radius:3px}
+
+/* 공간 지도 (Leaflet & POI 범례) */
+#lmap{
+  height:450px;border-radius:var(--radius-md);
+  border:1px solid var(--line-strong);background:var(--bg-blue);
+  box-shadow:inset 0 2px 6px rgba(0,45,114,0.06);
+}
+.leaflet-container{font:inherit}
+.hx-tip{
+  font-size:12px;font-weight:700;border-radius:6px;
+  border:1px solid var(--line);box-shadow:var(--shadow-sm);padding:4px 8px;
+}
+.rx-label{
+  background:var(--navy);color:#fff;border:0;border-radius:6px;
+  font-size:11.5px;font-weight:700;padding:3px 9px;
+  box-shadow:0 3px 8px rgba(0,45,114,0.3);
+}
+.rx-label::before{display:none}
+.here-label{
+  background:var(--green);color:#fff;border:1.5px solid #fff;border-radius:6px;
+  font-size:11.5px;font-weight:800;padding:3px 9px;
+  box-shadow:0 3px 8px rgba(78,143,0,0.35);
+}
+.here-label::before{display:none}
+.legend{
+  display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray);
+  margin-top:12px;flex-wrap:wrap;background:var(--bg-gray);
+  padding:8px 12px;border-radius:8px;border:1px solid var(--line);
+}
+.legend .sw{display:inline-block;width:26px;height:11px;border-radius:2px}
+.legend .gap{width:10px}
+.pm{
+  display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;
+  font:800 11.5px/1 var(--mono);color:#fff;border:1.5px solid #fff;
+  box-shadow:0 2px 4px rgba(0,0,0,.22);flex-shrink:0;
+}
+.pm.plus{background:var(--green-ink)}
+.pm.minus{background:var(--gold);border-radius:4px}
+.legend .pm{margin-right:2px}
+.poi-label{
+  background:rgba(255,255,255,0.95);backdrop-filter:blur(4px);
+  border:1px solid var(--line);border-radius:6px;padding:2px 7px;
+  font-size:11px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.14);white-space:nowrap;
+}
+.poi-label::before{display:none}
+.poi-label.plus{color:var(--green-ink);border-left:3.5px solid var(--green)}
+.poi-label.minus{color:var(--gold);border-left:3.5px solid var(--gold)}
+.pm.big{width:22px;height:22px;font-size:13px;border-width:2px;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.gridtg{
+  margin-left:auto;display:inline-flex;gap:6px;align-items:center;
+  cursor:pointer;color:var(--blue);font-weight:700;
+  background:#fff;padding:3px 10px;border-radius:6px;border:1px solid var(--line);
+}
+.gridtg input{accent-color:var(--blue);cursor:pointer}
+
+.poilg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media (max-width:640px){.poilg{grid-template-columns:1fr}}
+.lgcol{
+  background:var(--bg-gray);border:1px solid var(--line);
+  border-radius:var(--radius-md);padding:10px;
+}
+.lgh{
+  font-size:12.5px;font-weight:800;padding:6px 10px;border-radius:6px;margin-bottom:6px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.lgh small{font-weight:600;color:var(--gray);font-size:11px}
+.lgh.plus{background:var(--bg-mint);color:var(--green-ink);border-left:3px solid var(--green)}
+.lgh.minus{background:var(--gold-soft);color:var(--gold);border-left:3px solid var(--gold)}
+.lg{
+  display:grid;grid-template-columns:20px 1fr auto;gap:3px 8px;align-items:center;
+  width:100%;text-align:left;border:1px solid transparent;border-bottom-color:var(--line);
+  background:#fff;padding:7px 8px;border-radius:6px;margin-bottom:4px;
+  font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink);
+  transition:all .15s var(--ease);
+}
+.lg:last-child{margin-bottom:0;border-bottom-color:transparent}
+.lg:hover:not(:disabled){
+  border-color:var(--blue);background:var(--bg-blue);transform:translateX(2px);
+}
+.lg.on{border-color:var(--blue);background:var(--bg-blue);box-shadow:inset 3px 0 0 var(--blue)}
+.lg.on .t{color:var(--blue)}
+.lg .exp{color:var(--blue);font-weight:700}
+.pm.sm{width:12px;height:12px;font-size:9px;border-width:1.5px;opacity:.9}
+.lg:disabled{cursor:default;color:var(--gray-light);background:rgba(255,255,255,0.5)}
+.lg .t{font-weight:600}
+.lg .c{font-size:11px;color:var(--gray);background:var(--bg-gray);padding:1px 6px;border-radius:4px;border:1px solid var(--line)}
+.lg .far{grid-column:2/4;font-size:11px;color:var(--gray)}
+/* 마실스펙 MBTI */
+.mbti{display:grid;grid-template-columns:340px minmax(0,1fr);gap:32px;align-items:start}
+@media (min-width:1025px){.span2{grid-row:span 2}}
+.mbti-sum{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line-strong)}
+.mbti-go{display:inline-block;margin-top:2px;font-size:12px;font-weight:700;color:var(--blue);text-decoration:none}
+.mbti-go:hover{text-decoration:underline}
+.mbti-cs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mbti-cs .mbti-c{margin-top:0}
+.mbti-r .mtile{padding:12px 4px}
+.mbti-m .mcard{max-width:340px;margin:0 auto}
+.mbti-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mbti-q{font-size:14px;font-weight:700;color:var(--navy);line-height:1.5;margin-bottom:16px;word-break:keep-all;
+  border-left:3px solid var(--green);padding-left:10px}
+.mx-k{font-size:11.5px;font-weight:700;color:var(--gray);margin-bottom:8px}
+.mx-k span{font-weight:500;color:var(--gray-light)}
+.mbti-c{font-size:12.5px;line-height:1.55;color:var(--ink);background:var(--bg-gray);border-radius:var(--radius-md);
+  padding:9px 12px;margin-top:8px;word-break:keep-all}
+.mbti-c b{display:block;font-size:11px;color:var(--green-ink);margin-bottom:1px}
+.mtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mtile{display:flex;flex-direction:column;align-items:center;gap:1px;padding:9px 4px;border-radius:var(--radius-sm);
+  border:1px solid transparent;font:inherit;cursor:pointer;line-height:1.25;transition:transform .15s var(--ease)}
+.mtile:hover{transform:translateY(-2px)}
+.mtile b{font-size:12.5px;letter-spacing:.5px}
+.mtile span{font-size:10.5px;opacity:.8;word-break:keep-all;text-align:center}
+.mtile.ocean{background:#E3F5FC;color:#0B3954}.mtile.mountain{background:#EEF7E6;color:#1F3D1C}
+.mtile.here{border:2px solid var(--gold);box-shadow:0 0 0 3px var(--gold-soft);font-weight:800}
+@media (max-width:1024px){.mbti{grid-template-columns:1fr}.mbti-m{order:-1}}
+.mbti-badge{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-weight:800;font-size:18px;
+  letter-spacing:2px;padding:6px 12px;border-radius:8px;box-shadow:0 3px 8px rgba(0,104,179,.25)}
+.mbti-t{font-weight:800;font-size:15px;color:var(--navy);line-height:1.3}
+.mbti-t small{display:block;font-size:11px;font-weight:700;color:var(--green-ink);letter-spacing:.5px}
+.mx{display:grid;gap:9px;margin-bottom:14px}
+.mx-row{display:grid;grid-template-columns:1fr 90px 1fr;gap:8px;align-items:center;font-size:11.5px;color:var(--gray-light)}
+.mx-l{text-align:right}.mx-l b,.mx-r b{font-family:var(--mono);font-size:13px}
+.mx-l.on,.mx-r.on{color:var(--navy);font-weight:700}
+.mx-l.on b,.mx-r.on b{color:var(--blue)}
+.mx-bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--line)}
+.mx-bar i{display:block;height:100%;background:#D5DEE8}
+.mx-bar i.on{background:var(--blue)}
+.mbti > .mcard, .mbti > .mcard-img{max-width:360px;margin:0 auto}
+.mbti-all{display:block;width:100%;margin-top:10px;border:1px solid var(--blue);background:var(--bg-blue);color:var(--blue);
+  font:inherit;font-weight:700;font-size:13px;padding:9px;border-radius:var(--radius-md);cursor:pointer}
+.mbti-all:hover{background:var(--blue);color:#fff}
+
+.mcard-img{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in;border-radius:16px;overflow:hidden;
+  box-shadow:var(--shadow-md)}
+.mcard-img img{display:block;width:100%;height:auto}
+/* 스케치 카드: 카드뉴스와 같은 세로 비율·구성 (일러스트는 자리만) */
+.mcard{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;aspect-ratio:1696/2528;
+  padding:16px 16px 12px;border-radius:16px;border:6px solid;cursor:zoom-in;font:inherit;text-align:center;overflow:hidden;
+  box-shadow:var(--shadow-md)}
+.mcard.ocean{border-color:#1F7FA8;background:linear-gradient(180deg,#E3F5FC 0%,#BFE6F5 55%,#F4E7C8 100%);color:#0B3954}
+.mcard.mountain{border-color:#3E7A3A;background:linear-gradient(180deg,#EEF7E6 0%,#CDE8C0 55%,#E9E0C9 100%);color:#1F3D1C}
+.mc-stamp{position:absolute;top:10px;right:-28px;transform:rotate(35deg);background:var(--gold);color:#fff;font-size:9.5px;
+  font-weight:800;letter-spacing:1.5px;padding:2px 30px}
+.mc-brand{font-size:11px;font-weight:800;background:rgba(255,255,255,.75);padding:2px 12px;border-radius:999px}
+.mc-no{font-size:26px;font-weight:900;letter-spacing:-.5px;line-height:1.1;text-shadow:0 2px 0 #fff}
+.mc-name{font-size:15px;font-weight:900;background:#FFE680;padding:2px 10px;border-radius:6px;line-height:1.35;word-break:keep-all}
+.mc-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
+.mc-tag{font-size:10.5px;font-weight:700;background:rgba(11,57,84,.85);color:#fff;padding:2px 8px;border-radius:999px}
+.mountain .mc-tag{background:rgba(31,61,28,.85)}
+.mc-tag i{font-style:normal;margin-right:3px}
+.mc-illu{flex:1;width:100%;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  border:2px dashed rgba(0,0,0,.25);border-radius:12px;background:rgba(255,255,255,.45);font-size:12px}
+.mc-illu b{font-size:11px;letter-spacing:1px;opacity:.6}
+.mc-illu span{font-size:16px;font-weight:900}
+.mc-illu small{font-size:10.5px;opacity:.75;padding:0 10px;word-break:keep-all}
+/* 일러스트: 모든 카드에서 같은 크기의 정사각형 (카드 폭의 72%), 잘림 없이 전체 표시 */
+.mc-illu.art{position:relative;flex:none;width:72%;min-height:0;aspect-ratio:1;padding:0;border:3px solid #fff;
+  background:#fff;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.mc-illu.art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.mcard:has(.mc-illu.art) .mc-quote{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mcard:has(.mc-illu.art) .mc-info{margin-top:auto}
+.mcard.mini:has(.mc-illu.art) .mc-illu.art{width:78%}
+.mc-motif{position:absolute;left:8px;bottom:8px;font-style:normal;font-size:10.5px;font-weight:800;color:#fff;
+  background:rgba(0,0,0,.55);padding:2px 9px;border-radius:999px}
+.mcard.mini .mc-illu.art{border-width:2px}.mcard.mini .mc-motif{font-size:8px;left:4px;bottom:4px;padding:1px 6px}
+.mc-illu small em{font-style:normal;font-weight:800;font-size:9.5px;border:1px solid currentColor;border-radius:999px;
+  padding:0 6px;margin-right:5px}
+.mc-quote{font-size:13px;font-weight:800;line-height:1.45;word-break:keep-all}
+.mc-info{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;width:100%;text-align:left;background:rgba(255,255,255,.85);
+  border-radius:10px;padding:8px 10px;font-size:10.5px;line-height:1.45}
+.mc-info .dt{background:#0B3954;color:#fff;font-weight:800;border-radius:999px;padding:1px 8px;height:fit-content;white-space:nowrap;font-size:10px}
+.mountain .mc-info .dt{background:#1F3D1C}
+.mc-info .dd{word-break:keep-all}
+.mc-foot{font-size:10px;font-weight:800;opacity:.7}
+.mcard.mini{padding:10px 8px 8px;gap:5px;border-width:4px}
+.mcard.mini .mc-no{font-size:16px}.mcard.mini .mc-name{font-size:11px}
+.mcard.mini .mc-tag{font-size:8.5px;padding:1px 5px}
+.mcard.mini .mc-illu span{font-size:12px}.mcard.mini .mc-illu small{display:none}
+.mcard.mini .mc-quote{font-size:10px}.mcard.mini .mc-stamp{font-size:7.5px;top:7px}
+
+.mbti-modal{position:fixed;inset:0;z-index:2000;background:rgba(0,20,50,.55);display:flex;align-items:flex-start;justify-content:center;
+  padding:30px 16px;overflow:auto}
+.mbti-modal[hidden]{display:none}
+.mm-box{position:relative;background:#fff;border-radius:var(--radius-lg);padding:22px;width:min(1100px,100%);box-shadow:var(--shadow-lg)}
+.mm-close{position:absolute;top:10px;right:12px;border:0;background:var(--bg-gray);width:34px;height:34px;border-radius:50%;
+  font-size:16px;cursor:pointer}
+.mm-box h3{margin:0 0 14px;font-size:17px;color:var(--navy)}
+.mm-box h3 small{display:block;font-size:12px;color:var(--gray);font-weight:500;margin-top:2px}
+.mgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.mg-item{border-radius:18px}
+.mg-item.here{outline:4px solid #E8B730;outline-offset:3px}
+.mone{max-width:440px;margin:0 auto}
+.svgmap svg{width:100%;height:auto;max-height:420px;display:block}
+.svgmap .hx{stroke:#fff;stroke-width:6}
+
+/* 점수 구성 수평 바 차트 */
+.bar-row{
+  display:grid;grid-template-columns:148px 1fr 56px;gap:12px;align-items:center;
+  padding:7px 8px;border-radius:6px;transition:background .15s;
+}
+.bar-row:hover{background:var(--bg-gray)}
+.bar-row .nm{
+  font-size:13px;font-weight:600;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.bar-row .nm small{
+  color:var(--gray);font-size:11px;font-weight:600;
+  background:var(--bg-gray);padding:1px 5px;border-radius:4px;border:1px solid var(--line);
+}
+.bar{position:relative;height:18px;background:rgba(240,245,250,0.6);border-radius:6px;overflow:hidden}
+.bar .cap{
+  position:absolute;left:0;top:0;bottom:0;
+  background:var(--bg-blue);border:1px solid rgba(0,104,179,0.14);
+  border-radius:6px;
+}
+.bar .val{
+  position:absolute;left:0;top:0;bottom:0;
+  background:linear-gradient(90deg, var(--cyan) 0%, var(--blue) 100%);
+  border-radius:6px;box-shadow:0 1px 3px rgba(0,104,179,0.25);
+  transition:width .35s var(--ease);
+}
+.bar .val.neg{
+  background:linear-gradient(90deg, #B0925A 0%, var(--gold) 100%);
+}
+.bar-row .v{text-align:right;font-weight:800;font-size:13.5px;color:var(--blue)}
+.bar-row .v.neg{color:var(--gold)}
+.total{
+  display:grid;grid-template-columns:148px 1fr 56px;gap:12px;align-items:center;
+  background:var(--bg-blue);border:1px solid rgba(0,104,179,0.18);
+  border-radius:8px;margin-top:10px;padding:10px 12px;font-weight:800;color:var(--navy);
+}
+.total .v{text-align:right;color:var(--blue);font-size:17px}
+.note{color:var(--gray);font-size:12px;margin-top:10px;line-height:1.5}
+
+/* 근거 팩트 도내 백분위 분포 차트 */
+.fhead{
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  margin:0 0 10px;padding:8px 12px;
+  background:var(--bg-gray);border:1px solid var(--line);border-radius:8px;
+  font-size:12px;color:var(--gray);font-weight:600;
+}
+.fhead label{display:flex;gap:6px;align-items:center;cursor:pointer;color:var(--ink);font-weight:700;margin-right:auto}
+.fhead input{accent-color:var(--blue);cursor:pointer}
+.frow{
+  display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.55fr) 80px;gap:10px;align-items:center;
+  padding:6px 8px;border-radius:6px;border-bottom:1px solid rgba(226,232,240,0.5);
+  transition:background .15s;
+}
+.frow:last-child{border-bottom:0}
+.frow:hover{background:var(--bg-gray)}
+.frow .nm{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip{position:relative;height:22px}
+.strip .base{position:absolute;left:0;right:0;top:10px;height:2px;background:var(--line-strong);border-radius:2px}
+.strip .lo{
+  position:absolute;left:0;width:15%;top:3px;bottom:3px;
+  background:var(--gold-soft);border:1px solid rgba(134,108,65,0.22);
+  border-radius:4px 0 0 4px;
+}
+.strip .hi{
+  position:absolute;right:0;width:15%;top:3px;bottom:3px;
+  background:var(--bg-mint);border:1px solid rgba(114,205,0,0.3);
+  border-radius:0 4px 4px 0;
+}
+.strip .mid{position:absolute;left:50%;top:2px;bottom:2px;width:1.5px;background:var(--line-strong)}
+.strip .stem{position:absolute;top:9.5px;height:3px;background:var(--cyan);border-radius:2px}
+.strip .dot{
+  position:absolute;top:50%;width:13px;height:13px;border-radius:50%;
+  transform:translate(-50%,-50%);background:var(--cyan);
+  border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,169,224,0.5);
+  transition:transform .2s var(--ease);
+}
+.frow:hover .strip .dot{transform:translate(-50%,-50%) scale(1.2)}
+.strip .dot.good{background:var(--green);box-shadow:0 1px 5px rgba(78,143,0,0.55)}
+.strip .dot.bad{background:var(--gold);box-shadow:0 1px 5px rgba(134,108,65,0.55)}
+.frow .v{text-align:right;font-size:12.5px;font-weight:700;color:var(--navy);white-space:nowrap}
+.axis{
+  display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.55fr) 80px;gap:10px;
+  font-size:11px;font-weight:600;color:var(--gray);margin-top:6px;padding:0 8px;
+}
+.axis div:nth-child(2){display:flex;justify-content:space-between}
+
+/* 하단 3단 카드: 팩트 경고 · 현실 처방전 · 관점 차이 */
+.flag{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:12px 14px;border-radius:var(--radius-md);margin-bottom:10px;
+  font-size:13px;line-height:1.55;
+  background:var(--bg-blue);border:1px solid rgba(0,45,114,0.15);border-left:4px solid var(--navy);
+}
+.flag:last-child{margin-bottom:0}
+.flag b.t{
+  flex:0 0 auto;background:var(--navy);color:#fff;
+  font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px;margin-top:2px;
+}
+.ok{
+  background:var(--bg-mint);
+  border:1px solid rgba(114,205,0,0.3);
+  border-left:4px solid var(--green);
+  padding:14px 16px;border-radius:var(--radius-md);
+  font-size:13.5px;color:var(--green-ink);font-weight:700;
+  display:flex;align-items:center;gap:8px;
+}
+.persp{
+  background:var(--gold-soft);
+  border:1px solid rgba(134,108,65,0.22);
+  border-left:4px solid var(--gold);
+  padding:12px 14px;border-radius:var(--radius-md);
+  font-size:13px;line-height:1.55;margin-bottom:10px;
+}
+.persp:last-child{margin-bottom:0}
+.persp b{
+  display:inline-block;color:var(--gold);font-size:11.5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;
+}
+.rx{
+  display:grid;grid-template-columns:1fr auto;gap:6px 14px;
+  padding:12px 14px;margin-bottom:10px;
+  background:var(--bg-gray);border:1px solid var(--line);border-radius:var(--radius-md);
+  transition:border-color .15s;
+}
+.rx:hover{border-color:var(--green)}
+.rx:last-child{margin-bottom:0}
+.rx .t{font-size:13.5px;font-weight:800;color:var(--navy)}
+.rx .t span{color:var(--gray);font-weight:600;font-size:12.5px}
+.rx .gain{
+  grid-row:span 2;align-self:center;
+  font-size:22px;font-weight:800;color:var(--green-ink);
+  background:var(--bg-mint);border:1px solid rgba(114,205,0,0.35);
+  padding:4px 10px;border-radius:8px;
+}
+.rx .ba{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--gray)}
+.rx .ba .bar{flex:1;height:10px;background:#E2E8F0}
+.rx .ba .val.old{background:#94A3B8;box-shadow:none}
+.rx .ba .val.new{background:linear-gradient(90deg, var(--green) 0%, var(--green-ink) 100%);opacity:.9}
+.empty{
+  color:var(--gray);font-size:13px;
+  background:var(--bg-gray);border:1px dashed var(--line-strong);
+  padding:16px;border-radius:var(--radius-md);text-align:center;
+}
+
+/* 하단 아코디언 브리핑 원문 & 테이블 */
+details.brief{
+  margin-top:20px;background:var(--panel);
+  border:1px solid var(--line);border-top:3px solid var(--blue);
+  border-radius:var(--radius-lg);padding:16px 24px;
+  box-shadow:var(--shadow-sm);
+}
+details.brief summary{
+  cursor:pointer;font-weight:800;font-size:15px;color:var(--blue);
+  display:flex;align-items:center;gap:8px;list-style:none;
+}
+details.brief summary::-webkit-details-marker{display:none}
+details.brief summary::before{
+  content:"▶";font-size:11px;color:var(--green-ink);
+  transition:transform .2s var(--ease);
+}
+details.brief[open] summary::before{transform:rotate(90deg)}
+.brief-body{
+  font-size:13.5px;line-height:1.7;margin-top:14px;
+  padding-top:14px;border-top:1px solid var(--line);
+}
+.brief-body h3{
+  font-size:14.5px;font-weight:800;color:var(--blue);
+  margin:18px 0 8px;display:flex;align-items:center;gap:6px;
+}
+.brief-body h3::before{content:"■";font-size:11px;color:var(--green)}
+.brief-body table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  font-size:12.5px;margin:10px 0;border:1px solid var(--line);border-radius:8px;overflow:hidden;
+}
+.brief-body th{
+  background:var(--bg-blue);color:var(--navy);font-weight:800;text-align:left;
+  padding:8px 12px;border-bottom:1px solid var(--line);
+}
+.brief-body td{padding:8px 12px;border-bottom:1px solid var(--line);background:#fff}
+.brief-body tr:last-child td{border-bottom:0}
+.limits{
+  color:var(--gray);font-size:12px;margin:14px 0 0;
+  padding:12px 16px 12px 32px;background:var(--bg-gray);
+  border-radius:8px;border:1px solid var(--line);
+}
+.limits li{margin-bottom:4px}
+.limits li:last-child{margin-bottom:0}
+
+footer{
+  margin-top:28px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--gray);font-size:12px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+footer strong{color:var(--navy);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" title="마실 나가듯 동네의 스펙을 나눠 보는 앱">마실</div>
+      <div class="brand-txt" title="마실스펙: '마실 나간다'의 마실을 기준으로 동네 스펙을 나누는 앱의 제주 버전"><small>MASIL SPEC · JEJU TECHNOPARK</small>마실스펙_제주</div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="예시 위치"></nav>
+  </header>
+  <form class="search" id="search" autocomplete="off">
+    <span class="lbl">주소로 보기</span>
+    <input type="text" id="q" placeholder="도로명 주소 (예: 제주시 한림읍 한림로 300 · 서귀포시 중앙로 48)" aria-label="도로명 주소">
+    <select id="theme" aria-label="관심 테마"><option value="">관심 테마: 자동</option></select>
+    <button type="submit" id="go">삼춘한테 묻기</button>
+    <div class="msg" id="msg">도로명·지번 주소 또는 "위도,경도". 제주특별자치도는 생략해도 됩니다.</div>
+  </form>
+  <main id="app"></main>
+  <footer>
+    <span><strong>마실스펙_제주</strong> · 마실 나가듯 동네의 스펙을 나눠 보는 앱의 제주 버전</span>
+    <span><strong>(재)제주테크노파크</strong> 클린 테크(Clean Tech) 표준 디자인 시스템 적용</span>
+    <span>점수 체계: 제주 육상 H3 res9 셀 <span class="num">23,439</span>개 기준 도내 상대평가</span>
+  </footer>
+</div>
+<div class="mbti-modal" id="mbtiModal" hidden role="dialog" aria-modal="true" aria-label="마실스펙 MBTI 카드">
+  <div class="mm-box"><button type="button" class="mm-close" aria-label="닫기">✕</button><div id="mbtiModalBody"></div></div>
+</div>
+<script>
+const VIEWS = /*__DATA__*/[];
+const MBTI = /*__MBTI__*/{};  // 16유형 도감 (config/masil_mbti_16.md) · image 없으면 스케치 카드
+const SERVER = /*__SERVER__*/false;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const topPct = p => `상위 ${Math.max(100 - p, 1).toFixed(0)}%`;
+const rankTxt = r => r >= 50 ? `상위 ${Math.max(100 - r, 1).toFixed(0)}%` : `하위 ${Math.max(r, 1).toFixed(0)}%`;
+const SHORT = {family:"아이·가족", ocean:"오션", social:"청춘 소셜", bus_walker:"뚜벅이", workation:"워케이션",
+  quiet_culture:"고요·사색", senior:"시니어", mountain:"오름·마운틴"};
+/* 동네 한 줄 요약: 1위 테마 = 동네 유형(명사), 2·3위 테마 = 특징(…고 / …한) */
+const PERSONA = {
+  family:        {noun: "아이 키우는 생활권", conj: "아이 키우기 편하고", adj: "아이 키우기 편한"},
+  ocean:         {noun: "바다 앞 휴양 마을",  conj: "바다 놀이 좋고",     adj: "바다 놀이 좋은"},
+  social:        {noun: "먹고 마시는 핫플",   conj: "맛집·술집 가깝고",   adj: "맛집·술집 가까운"},
+  bus_walker:    {noun: "뚜벅이 생활권",      conj: "차 없이 다니기 편하고", adj: "차 없이 다니기 편한"},
+  workation:     {noun: "워케이션 거점",      conj: "노트북 펴고 일하기 좋고", adj: "일하며 머물기 좋은"},
+  quiet_culture: {noun: "고요한 쉼터",        conj: "조용히 쉬기 좋고",   adj: "조용히 쉬기 좋은"},
+  senior:        {noun: "안심 생활권",        conj: "어르신 지내기 편하고", adj: "어르신 지내기 편한"},
+  mountain:      {noun: "오름 아래 마을",     conj: "오름·숲이 가깝고",   adj: "오름·숲이 가까운"},
+};
+// 자주 나오는 1·2위 조합은 더 구체적인 별명
+const COMBO = {
+  "ocean+social": "해변 앞 맛집·술집 상권", "social+ocean": "해변 끼고 노는 핫플",
+  "social+bus_walker": "버스로 닿는 원도심 핫플", "bus_walker+social": "걸어서 다 되는 원도심",
+  "quiet_culture+mountain": "숲속 은둔형 쉼터", "mountain+quiet_culture": "오름 품은 고요한 마을",
+  "family+senior": "3대가 함께 살기 좋은 동네", "senior+family": "온 가족 안심 생활권",
+  "workation+quiet_culture": "조용한 워케이션 거점", "quiet_culture+workation": "혼자 일하고 쉬기 좋은 곳",
+  "ocean+mountain": "바다와 오름을 다 낀 곳", "mountain+ocean": "오름에서 바다까지 닿는 곳",
+};
+function oneLiner(v) {
+  if (v.headline.oneliner) return v.headline.oneliner;  // 나중에 LLM 이 다듬은 문장이 있으면 그대로 사용
+  const T = Object.fromEntries(v.themes.map(t => [t.key, t]));
+  const top = v.headline.top3 || [...v.themes].sort((a, b) => b.score - a.score).slice(0, 3).map(t => t.key);
+  const [a, b, c] = top;
+  if (T[a].score < 45) return "뚜렷하게 튀는 강점보다는 무난한 동네";
+  const noun = COMBO[`${a}+${b}`] || PERSONA[a].noun;
+  // 3위가 1위와 너무 차이 나면(25점 이상) 2위 특징만
+  const strong = [b, c].filter(k => T[k].score >= Math.max(50, T[a].score - 25));
+  // 형식: [2위 특징] + 동네 유형(1위, 1·2위 조합 별명 우선) + ", " + [3위 덧붙임]
+  if (COMBO[`${a}+${b}`]) return strong.includes(c) ? `${noun}, ${TAIL[c]}` : noun;
+  if (strong.length === 2) return `${PERSONA[b].adj} ${noun}, ${TAIL[c]}`;
+  if (strong.length === 1) return `${PERSONA[strong[0]].adj} ${noun}`;
+  return noun;
+}
+const TAIL = {family: "아이 키우기도 편함", ocean: "바다도 가까움", social: "맛집·술집도 가까움",
+  bus_walker: "차 없이 다니기도 편함", workation: "일하며 머물기도 좋음", quiet_culture: "조용히 쉬기도 좋음",
+  senior: "어르신 지내기도 편함", mountain: "오름·숲도 가까움"};
+/* ---------- 마실스펙 MBTI 카드 ---------- */
+const LETTER_TAG = {
+  Ocean: ["🌊", "Ocean"], Mountain: ["⛰️", "Mountain"], Family: ["👨‍👩‍👧", "Family"], Senior: ["🧓", "Senior"],
+  Youth: ["⚡", "Youth"], Quiet: ["🍃", "Quiet"], Workation: ["💼", "Workation"], "Bus-walker": ["🚌", "Bus-walker"],
+};
+// 일러스트 제작용 장면 메모 (글자별 배경 요소)
+const SCENE = {
+  O: "에메랄드 바다·현무암 해안", M: "오름 능선·삼나무 숲", F: "학교·놀이터", S: "평지 산책로·경로당",
+  Y: "카페·맛집 거리", Q: "한적한 돌담길", W: "노트북 펼친 테라스 카페", B: "버스 정류장",
+};
+function mbtiCard(t, mini = false) {
+  if (!t) return "";
+  const kind = t.code[0] === "O" ? "ocean" : "mountain";
+  if (t.image) return `<button type="button" class="mcard-img ${mini ? "mini" : ""}" data-code="${t.code}" aria-label="${esc(t.code)} 카드 크게 보기">
+      <img src="${t.image}" alt="${esc(t.no)}. ${esc(t.code)}형 ${esc(t.name)}" loading="lazy"></button>`;
+  const tags = t.letters.map(l => `<span class="mc-tag"><i>${LETTER_TAG[l][0]}</i>${LETTER_TAG[l][1]}</span>`).join("");
+  const a = t.art;  // 제주 고유 소재 캐릭터 (config/masil_mbti_art.yaml)
+  const illu = t.illu
+    ? `<img src="${t.illu}" alt="${esc(a ? a.motif : t.code)} 일러스트" loading="lazy">${a ? `<em class="mc-motif">${esc(a.motif)}</em>` : ""}`
+    : a
+    ? `<b>일러스트 프롬프트</b><span>${esc(a.motif)}</span>
+       <small><em>형태</em>${esc(a.form)}</small><small><em>장면</em>${esc(a.scene)}</small>`
+    : `<b>일러스트 자리</b><span>${esc(t.character)}</span>
+       <small>장면: ${[...t.code].map(c => SCENE[c]).join(" + ")}</small>`;
+  const charRows = a
+    ? `<span class="dt">캐릭터</span><span class="dd">${esc(a.motif)} — ${esc(a.concept)}</span>`
+    : `<span class="dt">캐릭터</span><span class="dd">${esc(t.character)} — ${esc(t.reason)}</span>`;
+  return `<button type="button" class="mcard sketch ${kind} ${mini ? "mini" : ""}" data-code="${t.code}" aria-label="${esc(t.code)} 카드 크게 보기">
+    ${t.illu ? "" : `<span class="mc-stamp">SKETCH</span>`}
+    <span class="mc-brand">마실스펙_제주</span>
+    <span class="mc-no">${String(t.no).padStart(2, "0")}. ${esc(t.code)}형</span>
+    <span class="mc-name">${esc(t.name)}</span>
+    <span class="mc-tags">${tags}</span>
+    <span class="mc-illu ${t.illu ? "art" : ""}">${illu}</span>
+    <span class="mc-quote">“${esc(t.oneliner)}”</span>
+    ${mini ? "" : `<span class="mc-info">
+      ${t.illu ? "" : `<span class="dt">지역 특징</span><span class="dd">${esc(t.features)}</span>`}
+      <span class="dt">대표 예시</span><span class="dd">${esc(t.regions)}</span>
+      ${charRows}</span>
+    <span class="mc-foot">Jeju Data Hub · JTP 제주테크노파크</span>`}
+  </button>`;
+}
+function mbtiBlock(v) {
+  const m = v.mbti, t = m && MBTI[m.code];
+  if (!t) return {summary: ""};
+  const axes = m.axes.map(a => {
+    const tot = Math.max(a.sa + a.sb, 1), pa = a.sa / tot * 100;
+    return `<div class="mx-row">
+      <span class="mx-l ${a.win === a.la ? "on" : ""}"><b>${a.la}</b> ${esc(SHORT[a.a])} <span class="num">${a.sa}</span></span>
+      <span class="mx-bar"><i class="a ${a.win === a.la ? "on" : ""}" style="width:${pa}%"></i><i class="b ${a.win === a.lb ? "on" : ""}" style="width:${100 - pa}%"></i></span>
+      <span class="mx-r ${a.win === a.lb ? "on" : ""}"><span class="num">${a.sb}</span> ${esc(SHORT[a.b])} <b>${a.lb}</b></span></div>`;
+  }).join("");
+  const a = t.art;
+  const head = `<div class="mbti-h"><span class="mbti-badge num">${esc(m.code)}</span>
+        <span class="mbti-t"><small>마실스펙 MBTI · ${String(t.no).padStart(2, "0")}번 유형</small>${esc(t.name)}</span></div>`;
+  // 팔각형 카드 아래: 유형 + 4축 근거 (지도 카드와 높이 균형)
+  const summary = `<div class="mbti-sum">${head}
+      <div class="mx-k">마주보는 테마 4쌍 중 점수가 높은 쪽 글자를 모은 것</div>
+      <div class="mx">${axes}</div>
+      <div class="mbti-m">${mbtiCard(t)}</div>
+      <button type="button" class="mbti-all" data-open-gallery="${esc(m.code)}">16유형 도감 보기 →</button></div>`;
+  return {summary};
+}
+function openMbti(code, gallery) {
+  const box = $("#mbtiModal"), body = $("#mbtiModalBody");
+  if (gallery) {
+    body.innerHTML = `<h3>마실스펙 MBTI 16유형 도감 <small>카드를 누르면 크게 · 금색 테두리 = 이 위치 유형</small></h3>
+      <div class="mgal">${Object.values(MBTI).sort((a, b) => a.no - b.no).map(t =>
+        `<div class="mg-item ${t.code === code ? "here" : ""}">${mbtiCard(t, true)}</div>`).join("")}</div>`;
+  } else {
+    body.innerHTML = `<div class="mone">${mbtiCard(MBTI[code])}</div>
+      <button type="button" class="mbti-all" data-open-gallery="${esc(code)}">← 16유형 도감으로</button>`;
+  }
+  box.hidden = false; document.body.style.overflow = "hidden";
+}
+function closeMbti() { $("#mbtiModal").hidden = true; document.body.style.overflow = ""; }
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-open-gallery]");
+  if (g) { openMbti(g.dataset.openGallery, true); return; }
+  const c = e.target.closest(".mcard, .mcard-img, .mtile");
+  if (c && !c.closest(".mone")) { openMbti(c.dataset.code, false); return; }
+  if (e.target.id === "mbtiModal" || e.target.closest(".mm-close")) closeMbti();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#mbtiModal").hidden) closeMbti(); });
+
+const Q = ["#EAF2F9", "#C3DDF0", "#7FC4E8", "#22A0DA", "#0068B3", "#002D72"];
+const qColor = s => Q[Math.min(5, Math.floor(s / 100 * 6))];
+let lmap = null;
+
+function section(md, title) {
+  const m = md.split(/^## /m).find(s => s.startsWith(title));
+  return m ? m.slice(title.length).trim() : "";
+}
+const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+function md2html(md) {
+  const out = []; let list = false, table = [];
+  const flushT = () => {
+    if (!table.length) return;
+    const rows = table.filter(r => !/^\|\s*:?-/.test(r)).map(r => r.split("|").slice(1, -1).map(c => c.trim()));
+    out.push("<table>" + rows.map((r, i) => "<tr>" + r.map(c => i ? `<td>${inline(c)}</td>` : `<th>${inline(c)}</th>`).join("") + "</tr>").join("") + "</table>");
+    table = [];
+  };
+  for (const line of md.split("\n")) {
+    if (line.startsWith("|")) { table.push(line); continue; } else flushT();
+    if (!line.startsWith("- ") && list) { out.push("</ul>"); list = false; }
+    if (line.startsWith("## ")) out.push(`<h3>${inline(line.slice(3))}</h3>`);
+    else if (line.startsWith("- ")) { if (!list) { out.push("<ul>"); list = true; } out.push(`<li>${inline(line.slice(2))}</li>`); }
+    else if (line.trim()) out.push(`<p>${inline(line)}</p>`);
+  }
+  flushT(); if (list) out.push("</ul>");
+  return out.join("");
+}
+
+/* ---------- 팔각형 레이더: 반대 성향 쌍을 마주보는 꼭짓점에 ---------- */
+function radarOrder(v) {
+  const p = v.polar_pairs || [];
+  const order = p.length === 4 ? [...p.map(x => x[0]), ...p.map(x => x[1])] : v.themes.map(t => t.key);
+  return order.filter(k => v.themes.some(t => t.key === k));
+}
+function radar(v, focus) {
+  const T = Object.fromEntries(v.themes.map(t => [t.key, t])), order = radarOrder(v), n = order.length;
+  const cx = 235, cy = 210, R = 140;
+  const at = (i, r) => { const a = (-90 + i * 360 / n) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+  const pts = f => order.map((k, i) => at(i, R * Math.max(0, f(T[k], i)) / 100).map(x => x.toFixed(1)).join(",")).join(" ");
+  let s = `<svg class="radar" viewBox="0 0 470 425" role="img" aria-label="8대 테마 점수 팔각형"><defs><linearGradient id="radarGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00A9E0" stop-opacity="0.28"/><stop offset="50%" stop-color="#0068B3" stop-opacity="0.20"/><stop offset="100%" stop-color="#72CD00" stop-opacity="0.24"/></linearGradient></defs>`;
+  for (const r of [20, 40, 60, 80, 100]) s += `<polygon class="gr ${r === 60 ? "" : ""} ${r === 50 ? "mid" : ""}" points="${pts(() => r)}"/>`;
+  s += `<polygon class="gr mid" points="${pts(() => 50)}"/>`;
+  order.forEach((_, i) => { const [x, y] = at(i, R); s += `<line class="ax" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; });
+  s += `<text class="tick" x="${cx + 4}" y="${cy - R * .5 + 11}">50</text><text class="tick" x="${cx + 4}" y="${cy - R + 11}">100</text>`;
+  s += `<polygon class="avg" points="${pts(t => t.avg)}"/>`;
+  s += `<polygon class="me" points="${pts(t => t.score)}"/>`;
+  order.forEach((k, i) => {
+    const t = T[k], f = k === focus, [px, py] = at(i, R * t.score / 100);
+    const [lx, ly] = at(i, R + 28), anchor = Math.abs(lx - cx) < 5 ? "middle" : lx > cx ? "start" : "end";
+    const dy = ly < cy - R * .9 ? -22 : ly > cy + R * .9 ? 6 : -8;
+    // 꼭짓점 + 라벨을 한 덩어리로 클릭 → 테마 전환
+    s += `<g class="vx ${f ? "on" : ""}" data-k="${k}" role="button" tabindex="0" aria-label="${esc(t.label)} 보기">
+      <title>${esc(t.label)} ${t.score.toFixed(0)}점 · 도내 ${topPct(t.pct)} · 제주 평균 ${t.avg.toFixed(0)} — 눌러서 이 테마로 보기</title>
+      <line class="hit" x1="${cx}" y1="${cy}" x2="${lx.toFixed(1)}" y2="${ly.toFixed(1)}"/>
+      <circle class="halo" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="13"/>
+      <circle class="pt ${f ? "f" : ""}" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${f ? 7 : 4.5}"/>
+      <text class="lb ${f ? "f" : ""}" x="${lx.toFixed(1)}" y="${(ly + dy).toFixed(1)}" text-anchor="${anchor}">${esc(SHORT[k] || t.label)}</text>
+      <text class="sv ${f ? "f" : ""}" x="${lx.toFixed(1)}" y="${(ly + dy + 19).toFixed(1)}" text-anchor="${anchor}">${t.score.toFixed(0)}<tspan class="pc" dx="4">${topPct(t.pct)}</tspan></text></g>`;
+  });
+  return s + `</svg>`;
+}
+
+/* ---------- 지도: 실제 배경지도 + 점수 육각형 (Leaflet 없으면 SVG) ---------- */
+let mapView = null;  // 테마 전환 시 같은 위치면 확대·위치 유지
+const mapUI = {grid: true, expanded: new Set()};  // 점수 격자 표시 여부, 전체 지점을 펼친 종류  // 점수 격자 표시 여부, 숨긴 지점 레이어
+function drawMap(v, th) {
+  const m = v.map, el = $("#lmap"), ti = v.themes.findIndex(t => t.key === th);
+  const label = v.themes[ti].label, sc = c => c.s ? c.s[ti] : null;
+  // 이전 지도의 '자기' 위치(h3)로 저장해야 다른 주소로 바뀔 때 새 위치로 이동한다
+  if (lmap) { mapView = {h3: lmap._samchunCenter, c: lmap.getCenter(), z: lmap.getZoom()}; lmap.remove(); lmap = null; }
+  if (!window.L) { el.outerHTML = `<div class="svgmap">${svgMap(m, ti)}</div>`; return; }
+  lmap = L.map(el, {scrollWheelZoom: false, zoomControl: true, attributionControl: true});
+  // 배경지도: 서버 모드 = 브이월드 타일(서버 중계, 키 비노출) / 파일 모드 = 생성 시 내장한 브이월드 이미지
+  const bm = m.basemap;
+  if (SERVER) L.tileLayer("/tiles/{z}/{y}/{x}.png", {minZoom: 7, maxZoom: 18, attribution: "배경지도 © 브이월드(국토교통부)"}).addTo(lmap);
+  else if (bm) {
+    L.imageOverlay(bm.img, bm.bounds, {attribution: bm.attribution}).addTo(lmap);
+    lmap.setMaxBounds(L.latLngBounds(bm.bounds).pad(.02));
+    lmap.setMinZoom(12); lmap.setMaxZoom(17);
+  }
+  // 보기 범위를 레이어보다 먼저 정한다 (Leaflet 은 뷰가 없으면 레이어를 못 그림)
+  lmap._samchunCenter = m.center;
+  if (mapView && mapView.h3 === m.center) lmap.setView(mapView.c, mapView.z, {animate: false});
+  else lmap.fitBounds(L.latLngBounds(m.cells.filter(c => c.s).flatMap(c => c.ll)).pad(.05));
+  // 점수 격자 (기본 켬, 체크박스로 끄기)
+  const group = [], OP = .45, grid = L.layerGroup();
+  m.cells.filter(c => c.s).forEach(c => {
+    const p = L.polygon(c.ll, {stroke: true, color: "#fff", weight: .8, fillColor: qColor(sc(c)), fillOpacity: OP})
+      .bindTooltip(`${esc(label)} <b>${sc(c)}</b>점`, {sticky: true, className: "hx-tip"});
+    p.on("mouseover", () => p.setStyle({fillOpacity: .8})).on("mouseout", () => p.setStyle({fillOpacity: OP}));
+    grid.addLayer(p); group.push(p);
+  });
+  if (mapUI.grid) grid.addTo(lmap);
+
+  // 가점·감점 요소: 지점 효과 x 이 테마에서 지표 가중치의 부호
+  const W = Object.fromEntries((v.by_theme?.[th]?.breakdown || []).map(b => [b.key, b.weight]));
+  const layers = Object.entries(v.poi_layers || {}).map(([k, Ly]) => ({k, ...Ly, w: W[Ly.indicator] || 0}))
+    .filter(Ly => Ly.w !== 0).map(Ly => ({...Ly, sign: Ly.effect * Math.sign(Ly.w)}));
+  const byK = Object.fromEntries(layers.map(Ly => [Ly.k, Ly]));
+  const stacks = new Map();
+  // 같은 자리에 겹친 지점(마을 중심으로 찍은 양돈장 등)은 하나로 묶고 개수를 표시
+  (v.pois || []).forEach(([k, lat, lng, name, dist]) => {
+    if (!byK[k]) return;
+    const key = `${k}|${lat.toFixed(4)}|${lng.toFixed(4)}`;
+    const s = stacks.get(key) || {k, lat, lng, dist, names: []};
+    s.names.push(name); stacks.set(key, s);
+  });
+  // 종류(레이어)마다 대표 1곳만: 가깝고(거리) 많이 모인(개수) 곳 — 점수 = 개수 / (거리 + 300m)
+  const rep = new Map(), repInfo = {};
+  stacks.forEach(s => {
+    const sc = s.names.length / (s.dist + 300), cur = rep.get(s.k);
+    if (!cur || sc > cur.sc) rep.set(s.k, {...s, sc});
+  });
+  // 마커 1개 만들기: 대표 지점은 크게(감점은 이름표 고정), 펼쳤을 때의 나머지 지점은 작게(마우스 올리면 이름)
+  const total = k => (v.pois || []).filter(p => p[0] === k).length;
+  const makeMarker = ({k, lat, lng, dist, names}, isRep) => {
+    const Ly = byK[k], n = names.length, pos = Ly.sign > 0, sz = isRep ? 20 : (n > 1 ? 16 : 12);
+    const icon = L.divIcon({className: "", iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2],
+      html: `<div class="pm ${pos ? "plus" : "minus"} ${isRep ? "big" : "sm"}">${n > 1 ? n : isRep ? (pos ? "+" : "−") : ""}</div>`});
+    const nm = [...new Set(names.filter(Boolean).map(s => s.replace(/^제주(특별자치도)?\s+/, "")))].slice(0, 3).map(esc).join(", ");
+    const dtxt = dist >= 1000 ? (dist / 1000).toFixed(1) + "km" : dist + "m";
+    const short = Ly.label.replace(/\s*\(.*\)/, "");
+    if (isRep) repInfo[k] = `${n > 1 ? n + "곳 묶음 · " : ""}${dtxt}${nm ? " · " + nm.split(", ")[0] : ""}`;
+    return L.marker([lat, lng], {icon, keyboard: false, zIndexOffset: (pos ? 0 : 1000) + (isRep ? 500 : 0)})
+      .bindTooltip(isRep ? `${esc(short)}${n > 1 ? ` ${n}곳` : ""} · ${dtxt}` : `${esc(short)}${nm ? " · " + nm.split(", ")[0] : ""} · ${dtxt}`,
+        {permanent: isRep && !pos, direction: "right", offset: [10, 0], className: `poi-label ${pos ? "plus" : "minus"}`})
+      .bindPopup(`<b>${pos ? "가점" : "감점"}</b> · ${esc(Ly.label)}${n > 1 ? ` ${n}곳` : ""}${nm ? `<br>${nm}` : ""}<br>여기서 <span class="num">${dtxt}</span> · 지도 안 전체 ${total(k)}곳`);
+  };
+  // 종류마다 두 벌: 대표 1곳(기본) / 전체(목록 버튼으로 펼침)
+  const repMarks = {}, allMarks = {};
+  rep.forEach((s, k) => { repMarks[k] = L.layerGroup([makeMarker(s, true)]); });
+  stacks.forEach((s, key) => {
+    const isRep = rep.get(s.k) && key === `${s.k}|${rep.get(s.k).lat.toFixed(4)}|${rep.get(s.k).lng.toFixed(4)}`;
+    (allMarks[s.k] ||= L.layerGroup()).addLayer(makeMarker(s, isRep));
+  });
+  const showLayer = k => {
+    repMarks[k]?.remove(); allMarks[k]?.remove();
+    (mapUI.expanded.has(k) ? allMarks[k] : repMarks[k])?.addTo(lmap);
+  };
+  Object.keys(repMarks).forEach(showLayer);
+  L.circle(m.center_ll, {radius: 1000, color: "#0068B3", weight: 1.2, dashArray: "4 5", fill: false, interactive: false}).addTo(lmap);
+
+  const here = m.cells.find(c => c.h3 === m.center);
+  if (here) L.polygon(here.ll, {color: "#72CD00", weight: 4, fill: false}).addTo(lmap)
+    .bindTooltip("여기", {permanent: true, direction: "top", className: "here-label", offset: [0, -8]});
+
+  // 범례 = 가점 / 감점 요소 목록 (누르면 켜고 끄기)
+  const cnt = k => (v.pois || []).filter(p => p[0] === k), within = (k, r) => cnt(k).filter(p => p[4] <= r).length;
+  const row = Ly => {
+    const n = cnt(Ly.k).length, n1 = within(Ly.k, 1000), nr = v.poi_nearest?.[Ly.k];
+    const far = !n && nr ? `<span class="far">가장 가까운 곳 ${(nr[1] / 1000).toFixed(1)}km${nr[0] ? " · " + esc(nr[0]) : ""}</span>` : "";
+    const open = mapUI.expanded.has(Ly.k);
+    return `<button type="button" class="lg ${Ly.sign > 0 ? "plus" : "minus"} ${open ? "on" : ""}" data-l="${Ly.k}" ${n ? "" : "disabled"} aria-pressed="${open}"
+      title="${esc(Ly.label)} → 지표 가중치 ${Ly.w}% (${Ly.effect > 0 ? "많을수록 지표↑" : "많을수록 지표↓"}) · 누르면 ${open ? "대표 1곳만" : `지도 안 ${n}곳 모두`} 표시">
+      <i class="pm ${Ly.sign > 0 ? "plus" : "minus"}">${Ly.sign > 0 ? "+" : "−"}</i><span class="t">${esc(Ly.label)}</span>
+      <span class="c num">${n ? `1km ${n1} · 지도 ${n}` : "지도 안 0"}</span>${far}${repInfo[Ly.k] ? `<span class="far">${open ? `<b class="exp">전체 ${n}곳 표시 중</b> · ` : ""}대표 지점: ${esc(repInfo[Ly.k])}</span>` : ""}</button>`;
+  };
+  const plus = layers.filter(Ly => Ly.sign > 0), minus = layers.filter(Ly => Ly.sign < 0);
+  $("#poiLegend").innerHTML = `
+    <div class="lgcol"><div class="lgh plus">가점 요소 <small>많을수록 ${esc(SHORT[th])} 점수↑</small></div>${plus.map(row).join("") || `<div class="empty">없음</div>`}</div>
+    <div class="lgcol"><div class="lgh minus">감점 요소 <small>많을수록 ${esc(SHORT[th])} 점수↓</small></div>${minus.map(row).join("") || `<div class="empty">없음</div>`}</div>`;
+  // 목록 버튼: 누르면 그 종류의 지도 안 지점 전체 표시 ↔ 다시 누르면 대표 1곳만
+  $("#poiLegend").onclick = e => {
+    const b = e.target.closest(".lg");
+    if (!b || b.disabled) return;
+    const k = b.dataset.l;
+    mapUI.expanded.has(k) ? mapUI.expanded.delete(k) : mapUI.expanded.add(k);
+    showLayer(k);
+    b.outerHTML = row(byK[k]);  // 버튼 문구(전체 표시 중) 갱신
+  };
+  const gt = $("#gridToggle");
+  if (gt) { gt.checked = mapUI.grid; gt.onchange = () => { mapUI.grid = gt.checked; gt.checked ? grid.addTo(lmap) : grid.remove(); }; }
+  const rxOne = v.by_theme?.[th]?.rx;
+  (rxOne ? [rxOne] : []).forEach(r => {
+    const c = m.cells.find(x => x.h3 === r.h3);
+    if (!c) return;
+    L.polygon(c.ll, {color: "#002D72", weight: 3, dashArray: "6 4", fill: false}).addTo(lmap)
+      .bindTooltip(`${esc(SHORT[r.theme] || r.theme_label)} ${r.score}점 (+${r.score - r.here_score})`, {permanent: true, direction: "top", className: "rx-label", offset: [0, -8]});
+    L.polyline([m.center_ll, [r.lat, r.lng]], {color: "#002D72", weight: 1.5, dashArray: "2 6", opacity: .8}).addTo(lmap);
+  });
+}
+function svgMap(m, ti) {
+  const xs = m.cells.flatMap(c => c.poly.map(p => p[0])), ys = m.cells.flatMap(c => c.poly.map(p => p[1]));
+  const x0 = Math.min(...xs) - 60, y0 = Math.min(...ys) - 60, w = Math.max(...xs) - x0 + 60, h = Math.max(...ys) - y0 + 60;
+  return `<svg viewBox="${x0} ${y0} ${w} ${h}">` + m.cells.map(c => `<polygon class="hx" fill="${c.s ? qColor(c.s[ti]) : "#F0F5FA"}"
+    ${c.h3 === m.center ? 'stroke="#72CD00" stroke-width="24"' : ""} points="${c.poly.map(p => p.join(",")).join(" ")}"/>`).join("") + `</svg>`;
+}
+
+/* ---------- 화면 ---------- */
+/* th = 지금 보고 있는 테마 (팔각형 꼭짓점·테마 버튼으로 전환). 요청 테마는 v.meta.focus_theme */
+function render(v, th) {
+  const T = Object.fromEntries(v.themes.map(t => [t.key, t]));
+  th = th && T[th] ? th : v.meta.focus_theme;
+  const req = v.meta.focus_theme, B = v.by_theme?.[th] || {breakdown: v.breakdown, rules: [], rx: null};
+  const M = {...v.meta, focus_theme: th, focus_label: T[th].label};
+  const H = {...v.headline, score: T[th].score, pct: T[th].pct};
+  const total = section(v.brief_md, "삼춘 총평").split("\n")[0];
+  const rules = (v.by_theme ? B.rules : v.alerts.filter(a => a.level === "high").map(a => a.text)).map(text => ({text}));
+  const bestRx = B.rx;
+  const worstRx = th !== H.worst ? v.by_theme?.[H.worst]?.rx : null;
+  const rxList = v.by_theme ? [bestRx, worstRx].filter(Boolean) : v.prescriptions;
+  const focusOnly = v.facts.filter(f => f.themes.includes(th) && f.rank != null);
+  const good = focusOnly.filter(f => f.rank >= 85).length, bad = focusOnly.filter(f => f.rank <= 15).length;
+  const bd = B.breakdown;
+  // 평균 점수: 서버 값이 없으면(옛 서버·옛 데이터) 화면에서 직접 계산
+  const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const OV = {
+    score: H.overall ?? mean(v.themes.map(t => t.score)),
+    pct: H.overall_pct ?? null,
+    avg: H.overall_avg ?? mean(v.themes.map(t => t.avg)),
+    top3: H.top3 || [...v.themes].sort((a, b) => b.score - a.score).slice(0, 3).map(t => t.key),
+  };
+  const tagline = th === req ? (v.meta.focus_given ? " (요청 테마)" : " (자동: 최고 테마)") : ` (전환 보기 · 요청: ${SHORT[req]})`;
+
+  // 점수 구성
+  const maxW = Math.max(...bd.map(b => Math.abs(b.weight)));
+  const bsum = bd.reduce((a, b) => a + b.contrib, 0);
+  const brows = bd.map(b => `
+    <div class="bar-row" title="지표 점수 ${b.indicator} × 가중치 ${b.weight}% = ${b.contrib}">
+      <div class="nm">${esc(b.name)}<small class="num">${b.weight}%</small></div>
+      <div class="bar"><div class="cap" style="width:${Math.abs(b.weight) / maxW * 100}%"></div>
+        <div class="val ${b.weight < 0 ? "neg" : ""}" style="width:${Math.abs(b.weight) / maxW * b.indicator}%"></div></div>
+      <div class="v num ${b.contrib < 0 ? "neg" : ""}">${b.contrib > 0 ? "+" : ""}${b.contrib.toFixed(1)}</div></div>`).join("");
+
+  const MB = mbtiBlock(v);
+  app.innerHTML = `
+  <section class="title">
+    <div class="eyebrow">LOCATION REPORT · ${esc(M.focus_label)}${tagline}</div>
+    <h1>${esc(v.title || M.address)}</h1>
+    <div class="sub">${M.road_address ? `<b>${esc(M.road_address)}</b> · ` : ""}${esc(M.adm_name.replace("제주특별자치도 ", ""))} · <span class="num">${M.lat.toFixed(4)}, ${M.lng.toFixed(4)}</span></div>
+    ${total ? `<div class="say">${inline(total)}${th !== req ? ` <span style="color:var(--gray);font-size:12px">(삼춘 총평은 요청 테마 ${esc(SHORT[req])} 기준)</span>` : ""}</div>` : ""}
+  </section>
+
+  <div class="grid">
+    <div class="card kpi c3"><div class="k">평균 점수 <span style="font-weight:500">8개 테마 평균</span></div>
+      <div class="v num">${OV.score.toFixed(0)}<small>/100</small></div>
+      <div class="oneliner">“${esc(oneLiner(v))}”</div>
+      <div class="meter"><i style="width:${OV.score}%"></i></div>
+      <div class="d">${OV.pct != null ? `도내 ${topPct(OV.pct)} · ` : ""}제주 평균 ${OV.avg.toFixed(0)}점<br>${OV.top3.map((k, i) => `${i + 1}위 ${esc(SHORT[k])} ${T[k].score.toFixed(0)}`).join(" · ")}</div></div>
+    <div class="card kpi g c3"><div class="k">가장 강한 테마</div>
+      <div class="v num">${T[H.best].score.toFixed(0)}<small>${esc(SHORT[H.best])}</small></div>
+      <div class="meter"><i style="width:${T[H.best].score}%"></i></div><div class="d">가장 약한 테마: ${esc(SHORT[H.worst])} ${T[H.worst].score.toFixed(0)}점</div></div>
+    <div class="card kpi n c3"><div class="k">위험 신호</div>
+      <div class="v num">${rules.length + bad}<small>건</small></div>
+      <div class="dots">${rules.map(() => `<i class="n"></i>`).join("")}${Array(bad).fill(`<i class="o"></i>`).join("")}${rules.length + bad ? "" : `<i></i>`}</div>
+      <div class="d">규칙 위반 ${rules.length} · 도내 하위 15% 팩트 ${bad} (관심 테마 기준)</div></div>
+    <div class="card kpi o c3"><div class="k">근처 더 나은 곳 (3km)</div>
+      <div class="v num">${bestRx ? "+" + (bestRx.score - bestRx.here_score) : "—"}<small>${bestRx ? "점" : ""}</small></div>
+      <div class="d">${bestRx ? `${esc(SHORT[th])} 기준 · ${esc(bestRx.direction)}쪽 ${bestRx.dist_km}km ${esc(bestRx.dong.replace(/^(제주시|서귀포시) /, ""))}` : `${esc(SHORT[th])} 기준 여기가 근처 최선`}</div>
+      <div class="d">강점 팩트(도내 상위 15%) ${good}개</div></div>
+
+    <section class="card c5 span2"><h2>8대 테마 점수 <small>마주보는 꼭짓점 = 반대 성향</small></h2>${radar(v, th)}
+      <div class="hint">▲ 꼭짓점(또는 아래 버튼)을 누르면 지도·점수 구성·팩트·처방이 그 테마로 바뀝니다</div>
+      <div class="tchips">${radarOrder(v).map(k => `<button type="button" data-k="${k}" class="${k === th ? "on" : ""}">${esc(SHORT[k])}<b>${T[k].score.toFixed(0)}</b></button>`).join("")}</div>
+      <div class="key"><span><i></i>이 위치</span><span><i class="d"></i>제주 전체 평균</span><span><i class="sq" style="background:var(--green)"></i>보고 있는 테마</span></div>
+      ${MB.summary}</section>
+    <section class="card c7"><h2>${esc(SHORT[th])} 가점·감점 요소 지도 <small>반경 약 ${(v.map.radius_m / 1000).toFixed(1)}km · 점선 원 = 1km</small></h2>
+      <div id="lmap"></div>
+      <div class="legend"><span class="pm plus">+</span>가점 <span class="gap"></span><span class="pm minus">−</span>감점 <small style="color:var(--gray)">(종류별 대표 1곳 · 아래 목록을 누르면 그 종류 전체 표시 · 숫자 = 겹친 개수)</small>
+        <span class="gap"></span><span class="sw" style="border:3px solid #72CD00;height:12px;width:18px"></span>여기
+        <span class="gap"></span><span class="sw" style="border:2px dashed #002D72;height:12px;width:18px"></span>처방 후보
+        <label class="gridtg"><input type="checkbox" id="gridToggle"> 점수 격자</label></div>
+      <div class="legend" style="margin-top:4px"><span>격자 점수 낮음</span>${Q.map(c => `<span class="sw" style="background:${c}"></span>`).join("")}<span>높음</span></div>
+      <div class="poilg" id="poiLegend"></div></section>
+
+
+    <section class="card c7"><h2>${esc(SHORT[M.focus_theme])} 점수는 왜 ${H.score.toFixed(0)}점인가 <small>지표 × 가중치</small></h2>
+      ${brows}
+      <div class="total"><div>합계</div><div class="note" style="margin:0">${bsum > 100 ? "100 초과분은 잘림" : ""}</div><div class="v num">${Math.min(100, Math.max(0, bsum)).toFixed(0)}</div></div>
+      <div class="note">연한 막대 = 가중치 크기 · 진한 막대 = 이 위치의 지표 점수(도내 백분위) · 금색 = 감점 지표</div></section>
+    <section class="card c12"><h2>근거 팩트 도내 위치 <small>오른쪽일수록 좋음</small></h2>
+      <div class="fhead"><label><input type="checkbox" id="onlyFocus" checked> ${esc(SHORT[M.focus_theme])} 관련만 (${focusOnly.length})</label>
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--bg-mint);border:1px solid var(--green)"></span> 상위 15%</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#F3EEE6;border:1px solid var(--gold)"></span> 하위 15%</span></div>
+      <div id="fchart"></div>
+      <div class="axis"><div></div><div><span>하위</span><span>중간</span><span>상위</span></div><div></div></div></section>
+
+    <section class="card c4"><h2>팩트 경고</h2>
+      ${rules.length ? rules.map(a => `<div class="flag"><b class="t">규칙</b><div>${esc(a.text)}</div></div>`).join("") : `<div class="ok">✓ 감점 규칙 위반 없음</div>`}</section>
+    <section class="card c4"><h2>현실 처방전 <small>반경 3km · ${esc(SHORT[th])}${worstRx ? " + 최약 테마" : ""}</small></h2>
+      ${rxList.length ? rxList.map(r => `
+        <div class="rx"><div class="t">${esc(SHORT[r.theme])} <span>· ${esc(r.direction)}쪽 ${r.dist_km}km ${esc(r.dong.replace(/^(제주시|서귀포시) /, ""))}</span></div>
+          <div class="gain num">+${r.score - r.here_score}</div>
+          <div class="ba"><span class="num">${r.here_score}</span><div class="bar"><div class="cap"></div><div class="val new" style="width:${r.score}%"></div><div class="val old" style="width:${r.here_score}%"></div></div><span class="num">${r.score}</span></div></div>`).join("")
+        : `<div class="empty">5점 이상 나은 곳이 없음 — 여기가 근처 최선</div>`}</section>
+    <section class="card c4"><h2>관점 차이</h2>
+      ${v.perspectives.length ? v.perspectives.map(p => `<div class="persp"><b>여행 vs 생활</b><br>${esc(p)}</div>`).join("") : `<div class="empty">테마 점수와 실제 여행객 행동이 크게 엇갈리지 않음</div>`}</section>
+  </div>
+
+  <details class="brief"><summary>삼춘 브리핑 원문 · 데이터 한계 · 기술 정보</summary>
+    <div class="brief-body">${md2html(v.brief_md.replace(/\n_데이터 한계:.*$/s, ""))}</div>
+    <ul class="limits">${v.data_limits.map(l => `<li>${esc(l)}</li>`).join("")}</ul>
+    <div class="chips" title="결과 추적용 식별 정보">
+      <span class="chip num" title="점수 계산 단위인 육각형 격자 칸 번호 (약 0.08km²)">격자 칸 H3 ${esc(M.h3)}</span>
+      <span class="chip num" title="이 결과를 만든 시각 기반 요청 번호">요청 번호 ${esc(M.request_id)}</span>
+      <span class="chip ${M.mode === "llm" ? "llm" : ""}" title="점수·팩트는 같고 문장 표현만 다름">브리핑 문장: ${M.mode === "llm" ? "AI 작성 (Gemma)" : "기본 문장 (AI 모델 설치 전)"}</span></div></details>`;
+
+  const drawFacts = only => {
+    const rows = v.facts.filter(f => f.rank != null && (!only || f.themes.includes(th))).sort((a, b) => b.rank - a.rank);
+    $("#fchart").innerHTML = rows.map(f => {
+      const cls = f.rank >= 85 ? "good" : f.rank <= 15 ? "bad" : "", lo = Math.min(50, f.rank), w = Math.abs(f.rank - 50);
+      return `<div class="frow" title="${esc(f.label)}: ${esc(f.display)} (도내 ${rankTxt(f.rank)})">
+        <div class="nm">${esc(f.label)}</div>
+        <div class="strip"><div class="lo"></div><div class="hi"></div><div class="base"></div><div class="mid"></div>
+          <div class="stem" style="left:${lo}%;width:${w}%"></div><div class="dot ${cls}" style="left:${f.rank}%"></div></div>
+        <div class="v num">${esc(f.display)}</div></div>`;
+    }).join("") || `<div class="empty">해당 팩트 없음</div>`;
+  };
+  drawFacts(true);
+  $("#onlyFocus").addEventListener("change", e => drawFacts(e.target.checked));
+  drawMap(v, th);
+
+  // 테마 전환: 팔각형 꼭짓점·라벨 / 테마 버튼
+  const go = k => { if (k !== th) render(v, k); };
+  app.querySelectorAll(".radar .vx, .tchips button").forEach(el => {
+    el.addEventListener("click", () => go(el.dataset.k));
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(el.dataset.k); } });
+  });
+}
+
+/* ---------- 탭·검색 ---------- */
+const app = $("#app"), tabs = $("#tabs");
+const addTab = (v, tabLabel) => {
+  const b = document.createElement("button");
+  b.textContent = tabLabel || v.title || v.meta.address; b.setAttribute("role", "tab");
+  b.onclick = () => { [...tabs.children].forEach(x => x.setAttribute("aria-selected", x === b)); render(v); };
+  tabs.appendChild(b);
+  return b;
+};
+VIEWS.forEach(v => addTab(v));
+if (VIEWS.length) tabs.children[0].click();
+
+const sel = $("#theme"), msg = $("#msg");
+(VIEWS[0]?.themes || []).forEach(t => sel.insertAdjacentHTML("beforeend", `<option value="${t.key}">${esc(t.label)}</option>`));
+if (!SERVER) msg.textContent = "주소 검색은 서버 모드에서 동작합니다: 터미널에서 python -m samchun.server 실행 → http://127.0.0.1:8800";
+$("#search").addEventListener("submit", async e => {
+  e.preventDefault();
+  const q = $("#q").value.trim();
+  if (!q) { $("#q").focus(); return; }
+  if (!SERVER) { msg.className = "msg err"; return; }
+  const go = $("#go"); go.disabled = true; msg.className = "msg"; msg.textContent = `"${q}" 위치 찾는 중...`;
+  try {
+    const r = await fetch(`/api/view?q=${encodeURIComponent(q)}&theme=${encodeURIComponent(sel.value)}`);
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+    const label = sel.value ? ` · ${SHORT[sel.value]}` : "";
+    addTab(d, (q.length > 14 ? q.slice(0, 14) + "…" : q) + label).click();
+    msg.textContent = `찾았수다 → ${d.meta.road_address || d.meta.adm_name}`;
+  } catch (err) {
+    msg.className = "msg err"; msg.textContent = `못 찾았수다: ${err.message}`;
+  } finally { go.disabled = false; }
+});
+</script>
+</body>
+</html>

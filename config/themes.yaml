@@ -1,0 +1,49 @@
+# 8대 테마 · 12대 지표 · 가중치 매트릭스 (ai_agent.md §1, §5)
+# 가중치 단위: % (테마별 열 합계 = 100). 음수 = 해당 지표가 높을수록 감점.
+# 2026-11-11 수정 (ai_agent.md §5 원표 대비): '안심 도로'가 시니어 0% · 마운틴 50%로 열이 밀린 것으로 판단해
+#   시니어: 안심도로 0→20, 클린하우스 10→5, 소음 15→10, 맛집 10→5, 오름 5→0
+#   마운틴: 안심도로 50→25, 오름 45→60, 응급 15→20, 소음 10→15
+# 2026-11-11 2차 (사용자 결정): 마운틴의 '도시 감점'(무단차 -10, 대중교통 -15) 제거.
+#   버스는 차 없는 등산객에게 가점(+5), 무단차 0. 도시스러움은 소음 청정 지표로만 반영.
+#   1안(무단차 0, 버스 +5, 오름 50, 안심도로 10, 소음 10)은 등산 여행객 검증이 +1.2(1위) → +0.2로 떨어지고
+#   제주시청 마운틴 28→50 으로 도심이 올라가 폐기. 도심 걸러내기를 소음 청정(렌터카·간선도로)에 맡긴 B안 채택:
+#   마운틴: 무단차 -10→0, 대중교통 -15→+5, 소음 15→30, 오름 60→45, 응급 20→10, 안심도로 25→5, 악취 5
+#   (검증: 등산 lift +1.1, 2위 — 1위 고요·사색 +1.2와 근소 차 / 제주시청 37, 서귀포 원도심 23, 성판악 58, 영실 81)
+
+themes:            # 열 순서 = weights 배열 순서
+  - {key: family,        no: 1, name: "아이·가족 안심살이"}
+  - {key: ocean,         no: 2, name: "오션 액티비티 & 휴양"}
+  - {key: social,        no: 3, name: "청춘 소셜 & 미식"}
+  - {key: bus_walker,    no: 4, name: "뚜벅이 버스 & 로컬타운"}
+  - {key: workation,     no: 5, name: "워케이션 & 노마드"}
+  - {key: quiet_culture, no: 6, name: "온전한 고요 & 사색문화"}
+  - {key: senior,        no: 7, name: "시니어 웰니스 & 안심운전"}
+  - {key: mountain,      no: 8, name: "오름·마운틴 아웃도어"}
+
+polar_pairs:
+  - [ocean, mountain]          # Sea vs Mountain
+  - [family, senior]           # Baby vs Senior
+  - [social, quiet_culture]    # Social vs Calm
+  - [workation, bus_walker]    # Digital vs Analog
+
+# 지표는 모두 0~100, "높을수록 좋음"으로 정규화된 값이어야 한다 (역방향 지표는 features 단계에서 반전).
+indicators:
+  #                                                   가족 오션 소셜 뚜벅 워케 고요 시니 마운
+  i01_odor_safety:      {name: "악취 안전 지수",        weights: [25,  5,   0,  5,  5, 25, 10,   5]}
+  i02_cleanhouse:       {name: "클린하우스 접근성",     weights: [20,  5,   0, 20,  5,  0,  5,   0]}
+  i03_quietness:        {name: "소음 청정 지수",        weights: [15,  0, -10,  5, 25, 30, 10,  30]}
+  i04_emergency:        {name: "응급의료 골든타임",     weights: [20,  5,   0,  5,  0,  0, 25,  10]}
+  i05_local_food:       {name: "도민 찐맛집 슬세권",    weights: [ 5, 10,  25, 15, 10,  5,  5,   0]}
+  i06_walk_drink:       {name: "대리 프리 음주권",      weights: [ 0, 15,  35,  5,  0,  0,  0,   0]}
+  i07_delivery:         {name: "배달앱 고립 방어",      weights: [ 5,  5,  15,  5, 20,  0,  0,   0]}
+  i08_barrier_free:     {name: "보행 무단차(턱) 지수",  weights: [15, 10,   0, 15,  0,  5, 15,   0]}
+  i09_transit:          {name: "대중교통 배차망",       weights: [ 0,  5,  15, 30,  0,  0, 10,   5]}
+  i10_beach_leisure:    {name: "청정 해변·레저권",      weights: [ 0, 35,  10,  0,  0,  0,  0,   0]}
+  i11_oreum_forest:     {name: "오름·숲길 접근성",      weights: [-5, -5,  -5, -5,  5, 10,  0,  45]}
+  i12_safe_road:        {name: "안심 도로·평지 선형",   weights: [ 0, 10,  15,  0, 30, 25, 20,   5]}
+
+grid:
+  h3_resolution: 9
+  crs_metric: "EPSG:5179"   # 거리·버퍼 계산용
+  crs_geo: "EPSG:4326"      # H3 · 지도 표시용
+  buffers_m: {walk: 500, neighborhood: 1500, drive: 5000}

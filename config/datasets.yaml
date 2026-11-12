@@ -1,0 +1,59 @@
+# 데이터셋 레지스트리 (ai_agent.md §3)
+# - source: hub      → 제주데이터허브. `match`(제목 부분일치)로 카탈로그(data/reference/jejudatahub_list_all.xlsx)에서 찾는다.
+#                      승인 필요 여부(authYn)는 여기 적지 않고 카탈로그에서 읽는다:
+#                      `python -m samchun.collect.catalog` 로 확인.
+# - source: external → 타 기관 API/SHP. 수집기는 collect/external.py 에 구현.
+# - indicators: 이 데이터가 들어가는 12대 지표 (config/themes.yaml 의 키)
+
+hub:
+  cleanhouse_jeju:      {match: "제주시_클린하우스",              indicators: [i02_cleanhouse]}
+  cleanhouse_seogwipo:  {match: "서귀포시_클린하우스현황",        indicators: [i02_cleanhouse]}
+  odor_facility:        {match: "악취배출시설현황",               indicators: [i01_odor_safety]}
+  livestock:            {match: "가축사육업 및 도축업 정보",      indicators: [i01_odor_safety]}
+  noise:                {match: "제주특별자치도 환경소음측정결과", indicators: [i03_quietness]}
+  er_hospital:          {match: "제주 응급실 보유 병원 정보",     indicators: [i04_emergency]}
+  health_subcenter:     {match: "제주시 보건지소등현황",          indicators: [i04_emergency]}
+  pork_certified:       {match: "돼지고기 판매 인증점 현황_도내", indicators: [i05_local_food]}
+  model_restaurant:     {match: "모범음식점현황",                 indicators: [i05_local_food]}
+  local_food:           {match: "향토음식점지정현황",             indicators: [i05_local_food]}
+  google_review:        {match: "리뷰 분석 데이터",               indicators: [i05_local_food, i03_quietness]}
+  safecode_visits:      {match: "안심코드 업종별 주차별 방문객",  indicators: [i06_walk_drink]}
+  barrier_free:         {match: "무장애여행",                     indicators: [i08_barrier_free]}
+  hayoung_olle:         {match: "하영올레 전체 코스",             indicators: [i08_barrier_free, i11_oreum_forest]}
+  bus_routes_jeju:      {match: "제주시내버스노선현황",           indicators: [i09_transit]}
+  beach_info:           {match: "해수욕장 정보",                  indicators: [i10_beach_leisure]}
+  beach_water:          {match: "해수욕장 수질",                  indicators: [i10_beach_leisure]}
+  sports_facility:      {match: "신고체육시설업",                 indicators: [i10_beach_leisure]}
+  oreum_location:       {match: "오름 위치 정보",                 indicators: [i11_oreum_forest]}
+  trail_closure:        {match: "등산로폐쇄구간지정현황",         indicators: [i11_oreum_forest]}
+  accident_road_shape:  {match: "도로 선형별 교통사고",           indicators: [i12_safe_road]}
+  accident_intersection: {match: "교차로 형태별 교통사고",        indicators: [i12_safe_road]}
+  rentcar_move:         {match: "렌터카 이동 빈도",               indicators: [i03_quietness, i12_safe_road]}
+  rentcar_stay:         {match: "렌터카 체류 빈도",               indicators: [i03_quietness, i06_walk_drink]}
+  rentcar_spot:         {match: "렌터카 체류 거점",               indicators: [i11_oreum_forest]}
+  ev_driving:           {match: "전기차 실제 운행 정보",          indicators: [i12_safe_road]}
+  wifi_ap:              {match: "제주 공공와이파이 AP 정보",      indicators: []}   # 테마5 가점용 (12지표 밖)
+  library:              {match: "제주 공공 도서관 정보",          indicators: []}   # 테마6 가점용
+  museum:               {match: "박물관 및 미술관 위치 정보",     indicators: []}   # 테마6 가점용
+  hot_spring:           {match: "온천이용현황",                   indicators: []}   # 테마7 가점용
+
+external:
+  tago_bus:        {provider: "공공데이터포털 TAGO",      type: api, indicators: [i09_transit]}
+  nemc_emergency:  {provider: "국립중앙의료원",           type: api, indicators: [i04_emergency]}
+  forest_oreum:    {provider: "산림청/공간정보포털",      type: shp, indicators: [i11_oreum_forest]}
+  kma_weather:     {provider: "기상청 ASOS/동네예보",     type: api, indicators: [i01_odor_safety, i12_safe_road]}
+  # 실제로 쓰고 있는 외부 출처
+  road_centerline: {provider: "브이월드 2D 데이터 API LT_L_N3A0020000 수치지도 도로중심선 (Vworld2Ddata_API_KEY, 도로폭 rvwd·차로수 rdln)", type: api, indicators: [i12_safe_road]}
+  juso_search:     {provider: "행안부 도로명주소 검색 API (JUSO_API_KEY) — 주소 검색 보조, 좌표·도로폭 없음", type: api, indicators: []}
+  local_food:      {provider: "공공데이터포털 odcloud 15043695 (향토음식점, DATA_GO_KR_KEY 승인)", type: api, indicators: [i05_local_food]}
+  visitjeju:       {provider: "비짓제주 OPEN API (VisitJeju_API_KEY, https만 응답)", type: api, indicators: [i05_local_food, i08_barrier_free]}
+  osm_roads:       {provider: "OpenStreetMap Overpass (키 불필요)", type: json, indicators: [i03_quietness]}
+  boundary:        {provider: "vuski/admdongkor 행정동 GeoJSON", type: geojson, indicators: []}
+  vworld_geocode:  {provider: "브이월드 주소 좌표변환 (Vworld_API_KEY)", type: api, indicators: []}
+  stores:          {provider: "소상공인 상가(상권)정보 API (B553077)", type: api, indicators: [i06_walk_drink, i07_delivery]}
+  odcloud_files:   {provider: "공공데이터포털 파일→API (악취·모범·서귀포 클린하우스·해수욕장·레저·온천·심야약국·응급)", type: api, indicators: [i01_odor_safety, i02_cleanhouse, i04_emergency, i05_local_food]}
+  tago_routes:     {provider: "TAGO 버스노선·경유정류소 (배차간격은 제주 0으로 비어 있음)", type: api, indicators: [i09_transit]}
+  accident_std:    {provider: "전국교통사고다발지역 표준데이터 + 도로교통공단 결빙·보행노인", type: api, indicators: [i12_safe_road]}
+  clinics:         {provider: "국립중앙의료원 병·의원 찾기 (진료시간 → 야간·휴일 소아)", type: api, indicators: []}
+  terrain:         {provider: "AWS Terrain Tiles z12 (키 불필요)", type: png, indicators: [i08_barrier_free, i12_safe_road]}
+  from_jeonbuk:    {provider: "../jyunbuk_ice 상습결빙구간·AWS 현천", type: csv, indicators: [i12_safe_road]}
