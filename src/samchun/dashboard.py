@@ -168,6 +168,17 @@ def view(location: str, theme: str | None = None, use_llm: bool = False) -> dict
     }
 
 
+def llm_parts(location: str, theme: str | None = None) -> dict:
+    """검색 화면을 먼저 띄운 뒤 채울 LLM 문장만 따로 (삼춘 브리핑 + 한줄평). 실패하면 mode='template'."""
+    import requests
+
+    p = agent.build_payload(location, theme)
+    try:
+        return {"brief_md": agent.llm_brief(p), "oneliner": agent.llm_oneliner(p.scores, p.strengths), "mode": "llm"}
+    except requests.RequestException:
+        return {"brief_md": None, "oneliner": None, "mode": "template"}
+
+
 EXAMPLES = [
     ("협재해수욕장 앞", "33.3938,126.2392", "social"),
     ("성판악 탐방로 입구", "33.3846,126.6196", "mountain"),

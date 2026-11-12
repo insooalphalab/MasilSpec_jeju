@@ -4,7 +4,8 @@
     python -m samchun.server --llm      # 검색 결과 브리핑을 LLM(Ollama)으로
 
 GET /                         대시보드 (예시 4곳 미리 계산)
-GET /api/view?q=주소&theme=    주소(도로명·지번) 또는 '위도,경도' → view JSON
+GET /api/view?q=주소&theme=    주소(도로명·지번) 또는 '위도,경도' → view JSON (템플릿 문장, 1~3초)
+GET /api/brief?q=위도,경도&theme=  --llm 일 때 삼춘 브리핑·한줄평만 LLM 으로 (20~30초) → 화면이 나중에 채움
 브이월드 키는 서버 안에서만 쓰고 브라우저로 내보내지 않는다.
 """
 import json
@@ -45,11 +46,24 @@ class Handler(BaseHTTPRequestHandler):
             if theme and theme not in agent.THEME_LABEL:
                 return self._send(400, json.dumps({"error": f"알 수 없는 테마: {theme}"}, ensure_ascii=False), "application/json")
             try:
-                v = dashboard.view(q, theme, STATE["llm"])
+                # 점수·지도는 바로 (1~3초). LLM 문장은 화면이 /api/brief 로 따로 받아 채운다 (20~30초)
+                v = dashboard.view(q, theme, use_llm=False)
                 v["title"] = v["meta"]["address"]  # '…리 (마을 중심 추정)' 표시가 제목에 남도록
+                v["meta"]["llm_pending"] = STATE["llm"]
                 return self._send(200, json.dumps(v, ensure_ascii=False, default=str), "application/json")
             except ValueError as e:  # 주소 변환 실패 / 제주 밖
                 return self._send(404, json.dumps({"error": str(e)}, ensure_ascii=False), "application/json")
+            except Exception as e:  # noqa: BLE001
+                traceback.print_exc()
+                return self._send(500, json.dumps({"error": f"{type(e).__name__}: {e}"}, ensure_ascii=False), "application/json")
+        if u.path == "/api/brief":
+            qs = parse_qs(u.query)
+            q = (qs.get("q") or [""])[0].strip()
+            theme = (qs.get("theme") or [""])[0] or None
+            if not q or not STATE["llm"] or (theme and theme not in agent.THEME_LABEL):
+                return self._send(400, json.dumps({"error": "bad request"}), "application/json")
+            try:
+                return self._send(200, json.dumps(dashboard.llm_parts(q, theme), ensure_ascii=False), "application/json")
             except Exception as e:  # noqa: BLE001
                 traceback.print_exc()
                 return self._send(500, json.dumps({"error": f"{type(e).__name__}: {e}"}, ensure_ascii=False), "application/json")

@@ -717,6 +717,10 @@ details.brief summary::before{
   transition:transform .2s var(--ease);
 }
 details.brief[open] summary::before{transform:rotate(90deg)}
+.pending{display:inline-block;margin-left:6px;font-size:12px;font-weight:700;color:var(--green-ink);
+  background:var(--green-soft);border-radius:999px;padding:1px 10px;animation:pend 1.4s ease-in-out infinite}
+@keyframes pend{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.pending{animation:none}}
 .brief-body{
   font-size:13.5px;line-height:1.7;margin-top:14px;
   padding-top:14px;border-top:1px solid var(--line);
@@ -1101,6 +1105,38 @@ function svgMap(m, ti) {
 
 /* ---------- 화면 ---------- */
 /* th = 지금 보고 있는 테마 (팔각형 꼭짓점·테마 버튼으로 전환). 요청 테마는 v.meta.focus_theme */
+/* ---------- 삼춘 문장 (검색 직후엔 기본 문장, LLM 문장이 오면 그 자리만 교체) ---------- */
+const PENDING = `<span class="pending">✍ 삼춘이 말 다듬는 중…</span>`;
+function sayHTML(v, th) {
+  const req = v.meta.focus_theme, total = section(v.brief_md, "삼춘 총평").split("\n")[0];
+  return inline(total) + (th !== req ? ` <span style="color:var(--gray);font-size:12px">(삼춘 총평은 요청 테마 ${esc(SHORT[req])} 기준)</span>` : "")
+    + (v.meta.llm_pending ? " " + PENDING : "");
+}
+function chipText(v) {
+  if (v.meta.llm_pending) return "브리핑 문장: AI 작성 중…";
+  return `브리핑 문장: ${v.meta.mode === "llm" ? "AI 작성 (Gemma)" : "기본 문장 (AI 모델 없음)"}`;
+}
+function applyBrief(v) {
+  if (app.dataset.vid !== v.meta.request_id) return;  // 다른 탭을 보고 있으면 데이터만 갱신 (탭 누르면 반영)
+  const say = $("#say"), one = $("#oneliner"), body = $("#briefBody"), chip = $("#briefChip");
+  if (say) { say.innerHTML = sayHTML(v, app.dataset.th); say.hidden = !section(v.brief_md, "삼춘 총평"); }
+  if (one) one.textContent = `“${oneLiner(v)}”`;
+  if (body) body.innerHTML = md2html(v.brief_md.replace(/\n_데이터 한계:.*$/s, ""));
+  if (chip) { chip.textContent = chipText(v); chip.classList.toggle("llm", v.meta.mode === "llm"); }
+}
+async function fillLLM(v, q, theme) {
+  try {
+    const r = await fetch(`/api/brief?q=${encodeURIComponent(q)}&theme=${encodeURIComponent(theme)}`);
+    const d = await r.json();
+    if (r.ok && d.mode === "llm" && d.brief_md) {
+      v.brief_md = d.brief_md; v.meta.mode = "llm";
+      if (d.oneliner) v.headline.oneliner = d.oneliner;
+    }
+  } catch (e) { /* LLM 서버가 꺼져 있으면 기본 문장 유지 */ }
+  v.meta.llm_pending = false;
+  applyBrief(v);
+}
+
 function render(v, th) {
   const T = Object.fromEntries(v.themes.map(t => [t.key, t]));
   th = th && T[th] ? th : v.meta.focus_theme;
@@ -1141,13 +1177,13 @@ function render(v, th) {
     <div class="eyebrow">LOCATION REPORT · ${esc(M.focus_label)}${tagline}</div>
     <h1>${esc(v.title || M.address)}</h1>
     <div class="sub">${M.road_address ? `<b>${esc(M.road_address)}</b> · ` : ""}${esc(M.adm_name.replace("제주특별자치도 ", ""))} · <span class="num">${M.lat.toFixed(4)}, ${M.lng.toFixed(4)}</span></div>
-    ${total ? `<div class="say">${inline(total)}${th !== req ? ` <span style="color:var(--gray);font-size:12px">(삼춘 총평은 요청 테마 ${esc(SHORT[req])} 기준)</span>` : ""}</div>` : ""}
+    <div class="say" id="say" ${total ? "" : "hidden"}>${sayHTML(v, th)}</div>
   </section>
 
   <div class="grid">
     <div class="card kpi c3"><div class="k">평균 점수 <span style="font-weight:500">8개 테마 평균</span></div>
       <div class="v num">${OV.score.toFixed(0)}<small>/100</small></div>
-      <div class="oneliner">“${esc(oneLiner(v))}”</div>
+      <div class="oneliner" id="oneliner">“${esc(oneLiner(v))}”</div>
       <div class="meter"><i style="width:${OV.score}%"></i></div>
       <div class="d">${OV.pct != null ? `도내 ${topPct(OV.pct)} · ` : ""}제주 평균 ${OV.avg.toFixed(0)}점<br>${OV.top3.map((k, i) => `${i + 1}위 ${esc(SHORT[k])} ${T[k].score.toFixed(0)}`).join(" · ")}</div></div>
     <div class="card kpi g c3"><div class="k">가장 강한 테마</div>
@@ -1201,12 +1237,13 @@ function render(v, th) {
   </div>
 
   <details class="brief"><summary>삼춘 브리핑 원문 · 데이터 한계 · 기술 정보</summary>
-    <div class="brief-body">${md2html(v.brief_md.replace(/\n_데이터 한계:.*$/s, ""))}</div>
+    <div class="brief-body" id="briefBody">${md2html(v.brief_md.replace(/\n_데이터 한계:.*$/s, ""))}</div>
     <ul class="limits">${v.data_limits.map(l => `<li>${esc(l)}</li>`).join("")}</ul>
     <div class="chips" title="결과 추적용 식별 정보">
       <span class="chip num" title="점수 계산 단위인 육각형 격자 칸 번호 (약 0.08km²)">격자 칸 H3 ${esc(M.h3)}</span>
       <span class="chip num" title="이 결과를 만든 시각 기반 요청 번호">요청 번호 ${esc(M.request_id)}</span>
-      <span class="chip ${M.mode === "llm" ? "llm" : ""}" title="점수·팩트는 같고 문장 표현만 다름">브리핑 문장: ${M.mode === "llm" ? "AI 작성 (Gemma)" : "기본 문장 (AI 모델 설치 전)"}</span></div></details>`;
+      <span class="chip ${M.mode === "llm" ? "llm" : ""}" id="briefChip" title="점수·팩트는 같고 문장 표현만 다름">${chipText(v)}</span></div></details>`;
+  app.dataset.vid = v.meta.request_id; app.dataset.th = th;  // 나중에 도착한 LLM 문장을 이 화면에 채울지 판단
 
   const drawFacts = only => {
     const rows = v.facts.filter(f => f.rank != null && (!only || f.themes.includes(th))).sort((a, b) => b.rank - a.rank);
@@ -1259,6 +1296,7 @@ $("#search").addEventListener("submit", async e => {
     const label = sel.value ? ` · ${SHORT[sel.value]}` : "";
     addTab(d, (q.length > 14 ? q.slice(0, 14) + "…" : q) + label).click();
     msg.textContent = `찾았수다 → ${d.meta.road_address || d.meta.adm_name}`;
+    if (d.meta.llm_pending) fillLLM(d, q, sel.value);  // 기다리지 않음: 화면 먼저, 삼춘 문장은 도착하면 채움
   } catch (err) {
     msg.className = "msg err"; msg.textContent = `못 찾았수다: ${err.message}`;
   } finally { go.disabled = false; }
