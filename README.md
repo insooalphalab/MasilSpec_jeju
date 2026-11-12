@@ -10,7 +10,7 @@
 
 | 대시보드 | 삼춘 브리핑 (LLM) | MBTI 카드 |
 |---|---|---|
-| ![](docs/screenshots/dashboard_협재.png) | ![](docs/screenshots/search_filled.png) | ![](app/dashboard/mbti/cards/05_OSYB.png) |
+| ![](docs/screenshots/dashboard_example.png) | ![](docs/screenshots/search_filled.png) | ![](app/dashboard/mbti/cards/05_OSYB.png) |
 
 ---
 
@@ -24,7 +24,16 @@ copy .env.example .env                 # 메모장으로 열어 키 입력 — �
 ```
 
 ### 1-2. 대시보드 보기 (서버 없이)
-`app/dashboard/example.html` 을 더블클릭 → 크롬에서 열림. 예시 4곳(협재·성판악·서귀포 원도심·구좌) 탭.
+`app/dashboard/example.html` 을 더블클릭 → 크롬에서 열림. 예시 4곳 탭 — 유형·테마·지역이 모두 다르게 골랐다:
+
+| 예시 | 관심 테마 | MBTI | 성격 |
+|---|---|---|---|
+| 제주시청 일대 | 아이·가족 | OFYB | 북쪽 도심 |
+| 성산일출봉 앞 | 오션 | OFYW | 동쪽 해안 관광지 |
+| 영실 탐방로 입구 | 마운틴 | MSQB | 한라산 고지대 (매표소, 해발 1,021m) |
+| 가시리 마을 | 고요·사색 | MFQW | 남동 중산간 마을 |
+
+예시는 `src/samchun/dashboard.py` 의 `EXAMPLES` 에서 바꾼다.
 배경지도가 이미지로 들어 있어 서버·인터넷 없이도 지도가 보인다.
 
 ### 1-3. 주소 검색 (로컬 서버)
